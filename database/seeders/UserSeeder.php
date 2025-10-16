@@ -10,25 +10,16 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::create([
-            'name' => 'Super Admin',
-            'email' => 'admin@emercerie.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-        ]);
-
-        User::create([
-            'name' => 'Mercerie Belle Couture',
-            'email' => 'belle@emercerie.com',
-            'password' => Hash::make('password'),
-            'role' => 'mercerie',
-        ]);
-
-        User::create([
-            'name' => 'Couturier Alain',
-            'email' => 'alain@emercerie.com',
-            'password' => Hash::make('password'),
-            'role' => 'couturier',
-        ]);
+        if (!User::where('email', 'admin@emercerie.com')->exists()) {
+            User::create([
+                'name' => 'Super Admin',
+                'email' => 'admin@emercerie.com',
+                'password' => Hash::make('ChangeMe123!'),
+                'role' => 'admin',
+            ]);
+            $this->command->info('Super administrateur créé : admin@emercerie.com / ChangeMe123!');
+        } else {
+            $this->command->warn('Super administrateur déjà existant, aucun nouvel enregistrement créé.');
+        }
     }
 }

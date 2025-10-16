@@ -1,23 +1,39 @@
-FROM composer:2 AS builder
-WORKDIR /app
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-scripts --no-progress --no-interaction
-COPY . .
-RUN composer dump-autoload -o
+# Étape 1 : Utiliser une image PHP avec les extensions nécessaires
+FROM php:8.3-fpm
 
-FROM php:8.4-apache
+# Installer les dépendances système
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libpq-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libonig-dev \
+    zip \
+    curl \
+    && docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
+
+# Installer Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Définir le dossier de travail
 WORKDIR /var/www/html
 
-# Installe les extensions nécessaires
-RUN apt-get update && apt-get install -y \
-    libzip-dev unzip git libpq-dev \
-    && docker-php-ext-install pdo pdo_pgsql pgsql zip
+# Copier le code Laravel
+COPY . .
 
-COPY --from=builder /app /var/www/html
-RUN a2enmod rewrite
+# Installer les dépendances PHP
+RUN composer install --optimize-autoloader
 
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Donner les bonnes permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["apache2-foreground"]
+# Générer la clé de l'application
+RUN php artisan key:generate
+
+# Exposer le port
+EXPOSE 8000
+
+# Démarrage de Laravel
+CMD php artisan migrate --force && php artisan db:seed --force && php artisan serve --host=0.0.0.0 --port=8000
