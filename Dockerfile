@@ -30,7 +30,7 @@ RUN composer install --optimize-autoloader
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Générer la clé de l'application
-RUN php artisan key:generate
+# RUN php artisan key:generate
 
 # Exposer le port
 EXPOSE 8000
