@@ -11,9 +11,10 @@ class OrderItem extends Model
 
     protected $fillable = [
         'order_id',
-        'supply_id',
+        'merchant_supply_id',
         'quantity',
         'price',
+        'subtotal',
     ];
 
     public function order()
@@ -21,9 +22,8 @@ class OrderItem extends Model
         return $this->belongsTo(Order::class);
     }
 
-    public function supply()
+    public function merchantSupply()
     {
-        return $this->belongsTo(Supply::class);
+        return $this->belongsTo(MerchantSupply::class, 'merchant_supply_id');
     }
 }
-

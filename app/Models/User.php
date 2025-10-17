@@ -23,7 +23,7 @@ class User extends Authenticatable
     protected $hidden = ['password'];
 
     /**
-     * 🔗 Relations
+     * Relations
      */
     public function merchantSupplies()
     {
@@ -41,7 +41,7 @@ class User extends Authenticatable
     }
 
     /**
-     * ✅ Vérifications de rôle
+     * Rôles
      */
     public function isAdmin(): bool
     {

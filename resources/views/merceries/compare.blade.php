@@ -18,10 +18,8 @@
                         </li>
                     @endforeach
                 </ul>
-
-                <form action="{{ route('orders.store') }}" method="POST">
+                <form action="{{ route('orders.storeFromMerchant', $mercerie['mercerie']['id']) }}" method="POST">
                     @csrf
-                    <input type="hidden" name="mercerie_id" value="{{ $mercerie['mercerie']['id'] }}">
                     @foreach($mercerie['details'] as $index => $detail)
                         <input type="hidden" name="items[{{ $index }}][merchant_supply_id]" value="{{ $detail['merchant_supply_id'] }}">
                         <input type="hidden" name="items[{{ $index }}][quantity]" value="{{ $detail['quantite'] }}">

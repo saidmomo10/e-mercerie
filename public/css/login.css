@@ -1,4 +1,4 @@
-/* @import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
+@import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
 
 * {
 	box-sizing: border-box;
@@ -86,6 +86,25 @@ input {
 	padding: 12px 15px;
 	margin: 8px 0;
 	width: 100%;
+	border-radius: 5px;
+}
+
+select{
+	width: 100%;
+    background-color: #eee;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+	margin: 8px 0;
+	padding: 12px 15px;
+    color: #5d657b;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -webkit-transition: all 0.3s ease-out 0s;
+    -moz-transition: all 0.3s ease-out 0s;
+    -ms-transition: all 0.3s ease-out 0s;
+    -o-transition: all 0.3s ease-out 0s;
+    transition: all 0.3s ease-out 0s;
 }
 
 .container {
@@ -225,27 +244,14 @@ input {
 	width: 40px;
 }
 
-footer {
-    background-color: #222;
-    color: #fff;
-    font-size: 14px;
-    bottom: 0;
-    position: fixed;
-    left: 0;
-    right: 0;
-    text-align: center;
-    z-index: 999;
+/* Erreurs Laravel */
+.alert.error {
+	background-color: #ffe3e3;
+	color: #a60000;
+	border-left: 4px solid #ff4d4d;
+	padding: 10px;
+	margin: 10px 0;
+	width: 100%;
+	text-align: left;
+	border-radius: 6px;
 }
-
-footer p {
-    margin: 10px 0;
-}
-
-footer i {
-    color: red;
-}
-
-footer a {
-    color: #3c97bf;
-    text-decoration: none;
-} */

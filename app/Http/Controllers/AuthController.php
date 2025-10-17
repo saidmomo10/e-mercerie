@@ -35,7 +35,7 @@ class AuthController extends Controller
 
         auth()->login($user); // Connecte directement l'utilisateur
 
-        return redirect()->route('supplies.index')->with('success', 'Inscription réussie !');
+        return redirect()->route('login.form')->with('success', 'Inscription réussie !');
     }
 
     // Afficher le formulaire de connexion

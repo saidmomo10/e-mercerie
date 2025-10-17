@@ -1,69 +1,79 @@
-@push('styles')
+
 <link rel="stylesheet" href="{{ asset('css/login.css') }}">
-@endpush
 
-@push('scripts')
-<script src="{{ asset('js/login.js') }}"></script>
-@endpush
+logo
+<div class="container" id="container">
+    {{-- FORMULAIRE D’INSCRIPTION --}}
+    <div class="form-container sign-up-container">
+        <form action="{{ route('register.submit') }}" method="POST">
+            @csrf
+            <h1>Créer un compte</h1>
 
-@extends('layouts.app')
+            @if($errors->any() && request()->is('register'))
+                <div class="alert error">
+                    <ul>
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
-@section('content')
-<div class="container mt-5" style="max-width: 500px;">
-    <div class="card shadow-sm p-4">
-        <h2 class="text-center mb-4">Connexion</h2>
+            <input type="text" name="name" placeholder="Nom complet" value="{{ old('name') }}" required />
+            <input type="email" name="email" placeholder="Email" value="{{ old('email') }}" required />
+            <input type="password" name="password" placeholder="Mot de passe" required />
+            <input type="password" name="password_confirmation" placeholder="Confirmer le mot de passe" required />
 
-        {{-- Messages d'erreur --}}
-        @if($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+            <select name="role" required>
+                <option value="">Choisissez un rôle</option>
+                <option value="couturier" {{ old('role')=='couturier'?'selected':'' }}>Couturier</option>
+                <option value="mercerie" {{ old('role')=='mercerie'?'selected':'' }}>Mercerie</option>
+            </select>
 
-        {{-- Message de succès --}}
-        @if(session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
+            <button type="submit">S'inscrire</button>
+        </form>
+    </div>
 
-        {{-- Formulaire de connexion --}}
+    {{-- FORMULAIRE DE CONNEXION --}}
+    <div class="form-container sign-in-container">
         <form action="{{ route('login.submit') }}" method="POST">
             @csrf
+            <h1>Connexion</h1>
 
-            <div class="mb-3">
-                <label for="email" class="form-label">Adresse email</label>
-                <input type="email"
-                       name="email"
-                       id="email"
-                       class="form-control"
-                       value="{{ old('email') }}"
-                       required
-                       autofocus>
-            </div>
+            @if($errors->any() && request()->is('login'))
+                <div class="alert error">
+                    <ul>
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
-            <div class="mb-3">
-                <label for="password" class="form-label">Mot de passe</label>
-                <input type="password"
-                       name="password"
-                       id="password"
-                       class="form-control"
-                       required>
-            </div>
+            <input type="email" name="email" placeholder="Email" value="{{ old('email') }}" required />
+            <input type="password" name="password" placeholder="Mot de passe" required />
+            <button type="submit">Se connecter</button>
 
-            <div class="d-grid">
-                <button type="submit" class="btn btn-primary">Se connecter</button>
-            </div>
+            <a href="#">Mot de passe oublié ?</a>
         </form>
+    </div>
 
-        <p class="text-center mt-3">
-            Pas encore inscrit ?
-            <a href="{{ route('register.form') }}" class="text-decoration-none">Créer un compte</a>
-        </p>
+    {{-- OVERLAY ANIMÉ --}}
+    <div class="overlay-container">
+        <div class="overlay">
+            <div class="overlay-panel overlay-left">
+                <h1>Bon retour !</h1>
+                <p>Connecte-toi avec tes informations personnelles</p>
+                <button class="ghost" id="signIn">Connexion</button>
+            </div>
+            <div class="overlay-panel overlay-right">
+                <h1>Bienvenue !</h1>
+                <p>Entre tes informations pour créer un compte</p>
+                <button class="ghost" id="signUp">Inscription</button>
+            </div>
+        </div>
     </div>
 </div>
-@endsection
+
+<script src="{{ asset('js/login.js') }}"></script>
+
