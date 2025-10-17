@@ -1,7 +1,8 @@
 # Étape 1 : Utiliser une image PHP avec les extensions nécessaires
 FROM php:8.3-fpm
 
-# Installer les dépendances système
+
+# Installer les dépendances système et Node.js
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -12,6 +13,8 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     zip \
     curl \
+    nodejs \
+    npm \
     && docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
 
 # Installer Composer
@@ -23,8 +26,12 @@ WORKDIR /var/www/html
 # Copier le code Laravel
 COPY . .
 
+
 # Installer les dépendances PHP
 RUN composer install --optimize-autoloader
+
+# Installer les dépendances front et compiler les assets
+RUN npm install && npm run build
 
 # Donner les bonnes permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
