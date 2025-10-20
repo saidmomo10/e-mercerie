@@ -26,6 +26,7 @@ class PriceComparisonController extends Controller
             return redirect()->back()->with('error', 'Veuillez sélectionner au moins une fourniture.');
         }
 
+        // Charger les merceries avec leurs fournitures et les infos de la fourniture liée
         $merceries = User::where('role', 'mercerie')->with('merchantSupplies.supply')->get();
         $disponibles = [];
         $non_disponibles = [];
@@ -39,15 +40,18 @@ class PriceComparisonController extends Controller
             foreach ($items as $item) {
                 $supply = $mercerie->merchantSupplies->firstWhere('supply_id', $item['supply_id']);
 
+                // Récupération du nom de la fourniture depuis la table supplies
+                $supplyName = \App\Models\Supply::find($item['supply_id'])->name ?? "Fourniture inconnue";
+
                 if (!$supply) {
                     $peut_fournir = false;
-                    $raisons[] = "Fourniture ID {$item['supply_id']} non disponible";
+                    $raisons[] = "❌ La fourniture « {$supplyName} » n’est pas disponible chez cette mercerie.";
                     continue;
                 }
 
                 if ($supply->stock_quantity < $item['quantity']) {
                     $peut_fournir = false;
-                    $raisons[] = "Stock insuffisant pour '{$supply->supply->name}' (disponible: {$supply->stock_quantity})";
+                    $raisons[] = "⚠️ Stock insuffisant pour « {$supplyName} » (disponible : {$supply->stock_quantity}).";
                     continue;
                 }
 
@@ -55,7 +59,7 @@ class PriceComparisonController extends Controller
                 $total += $sous_total;
 
                 $details[] = [
-                    'supply' => $supply->supply->name,
+                    'supply' => $supplyName,
                     'prix_unitaire' => (float) $supply->price,
                     'quantite' => $item['quantity'],
                     'sous_total' => $sous_total,
@@ -83,8 +87,10 @@ class PriceComparisonController extends Controller
             }
         }
 
+        // Trier les merceries disponibles par prix total estimé croissant
         usort($disponibles, fn($a, $b) => $a['total_estime'] <=> $b['total_estime']);
 
         return view('merceries.compare', compact('disponibles', 'non_disponibles', 'items'));
     }
+
 }

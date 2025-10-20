@@ -4,7 +4,7 @@
 <h1 class="mb-4">Comparaison des merceries</h1>
 
 <h2>Merceries disponibles</h2>
-<div class="row">
+<div class="row mt-5">
 @forelse($disponibles as $mercerie)
     <div class="col-md-6 mb-3">
         <div class="card shadow-sm">
@@ -24,7 +24,7 @@
                         <input type="hidden" name="items[{{ $index }}][merchant_supply_id]" value="{{ $detail['merchant_supply_id'] }}">
                         <input type="hidden" name="items[{{ $index }}][quantity]" value="{{ $detail['quantite'] }}">
                     @endforeach
-                    <button type="submit" class="btn btn-primary w-100">Valider cette mercerie</button>
+                    <button type="submit" class="main-btn success-btn-outline rounded-full btn-hover">Valider cette mercerie</button>
                 </form>
             </div>
         </div>
@@ -35,15 +35,15 @@
 </div>
 
 <h2 class="mt-5">Merceries non disponibles</h2>
-<div class="row">
+<div class="row mt-5">
 @forelse($non_disponibles as $mercerie)
     <div class="col-md-6 mb-3">
         <div class="card border-danger">
             <div class="card-body">
-                <h5 class="card-title text-danger">{{ $mercerie['mercerie']['name'] }}</h5>
+                <h5 class="card-title">{{ $mercerie['mercerie']['name'] }}</h5>
                 <ul class="list-group list-group-flush">
                     @foreach($mercerie['raisons'] as $raison)
-                        <li class="list-group-item text-danger">{{ $raison }}</li>
+                        <li class="list-group-item">{{ $raison }}</li>
                     @endforeach
                 </ul>
             </div>

@@ -18,9 +18,26 @@ class User extends Authenticatable
         'role',
         'phone',
         'address',
+        'avatar',
+        'city',
     ];
 
     protected $hidden = ['password'];
+
+    public function getAvatarUrlAttribute()
+    {
+        if ($this->avatar) {
+            // Si avatar uploadé via formulaire (stocké dans storage/app/public/avatars)
+            if (str_starts_with($this->avatar, 'avatars/')) {
+                return asset('storage/' . $this->avatar);
+            }
+            // Sinon, chemin relatif dans public/images/avatars
+            return asset($this->avatar);
+        }
+        return asset('images/avatars/default.png');
+    }
+
+
 
     /**
      * Relations

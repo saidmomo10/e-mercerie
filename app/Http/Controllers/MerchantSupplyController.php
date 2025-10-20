@@ -19,10 +19,30 @@ class MerchantSupplyController extends Controller
     }
 
     // Formulaire pour ajouter une nouvelle fourniture
-    public function create()
+    public function create(Request $request)
     {
-        $supplies = Supply::all();
+        $user = $request->user();
+
+        if (!$user->city || !$user->phone || !$user->address) {
+            return redirect()->route('merchant.supplies.index')
+                ->with('showProfileModal', true);
+        }
+
+        // Charger seulement les fournitures nécessaires pour l'initialisation
+        $supplies = Supply::limit(50)->get();
         return view('merchant.supplies.create', compact('supplies'));
+    }
+
+    // Ajoutez cette méthode pour la recherche AJAX
+    public function searchSupplies(Request $request)
+    {
+        $search = $request->get('q');
+        
+        $supplies = Supply::where('name', 'LIKE', "%{$search}%")
+            ->limit(20)
+            ->get(['id', 'name as text']);
+
+        return response()->json(['results' => $supplies]);
     }
 
     // Stocke la nouvelle fourniture

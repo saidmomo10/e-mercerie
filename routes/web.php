@@ -46,6 +46,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('couturier')->group(function() {
         // Étape 2 : Sélection des fournitures et quantité
         Route::get('/fournitures/selection', [SupplyController::class, 'selectionForm'])->name('supplies.selection');
+        Route::get('/supplies/search', [SupplyController::class, 'search'])->name('supplies.search');
 
         // Étape 3 : Comparaison des merceries
         Route::post('/merceries/comparer', [PriceComparisonController::class, 'compare'])->name('merceries.compare');
@@ -63,10 +64,12 @@ Route::middleware('auth')->group(function () {
     // Mercerie
     Route::prefix('merchant')->group(function() {
         Route::get('/supplies', [MerchantSupplyController::class, 'index'])->name('merchant.supplies.index');
-        Route::get('/supplies/create', [MerchantSupplyController::class, 'create'])->name('merchant.supplies.create');
         Route::post('/supplies', [MerchantSupplyController::class, 'store'])->name('merchant.supplies.store');
         Route::get('/supplies/{id}/edit', [MerchantSupplyController::class, 'edit'])->name('merchant.supplies.edit');
         Route::put('/supplies/{id}', [MerchantSupplyController::class, 'update'])->name('merchant.supplies.update');
+        Route::get('/merceries/profile/edit', [MerchantController::class, 'edit'])->name('merceries.profile.edit');
+        Route::put('/merceries/profile/update', [MerchantController::class, 'updateProfile'])->name('merceries.profile.update');
+
         Route::delete('/supplies/{id}', [MerchantSupplyController::class, 'destroy'])->name('merchant.supplies.destroy');
         // Gestion des commandes reçues par la mercerie
         Route::post('/orders/{id}/accept', [OrderController::class, 'accept'])->name('orders.accept');
@@ -74,13 +77,23 @@ Route::middleware('auth')->group(function () {
 
     });
 
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/merchant/supplies/create', [MerchantSupplyController::class, 'create'])
+            ->name('merchant.supplies.create');
+        Route::get('/merchant/supplies/search', [MerchantSupplyController::class, 'searchSupplies'])
+            ->name('merchant.supplies.search');
+    });
+
     // Couturier
     Route::prefix('couturier')->middleware('auth')->group(function () {
         Route::get('/merceries', [MerchantController::class, 'index'])->name('merceries.index');
         Route::get('/merceries/{id}', [MerchantController::class, 'show'])->name('merceries.show');
         Route::post('/merceries/{id}/order', [OrderController::class, 'storeFromMerchant'])->name('merceries.order');
+        Route::get('/api/merceries/search', [MerchantController::class, 'searchAjax'])->name('api.merceries.search');
     });
 
+    // Recherche AJAX (live)
+    Route::get('/api/fournitures/search', [SupplyController::class, 'searchAjax'])->middleware('auth')->name('api.supplies.search');
 
 
 });

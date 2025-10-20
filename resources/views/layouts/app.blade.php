@@ -19,13 +19,15 @@
     <link rel="stylesheet" href="{{ asset('css/lineicons.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
     @stack('styles')
   </head>
   <body>
     <!-- ======== Preloader =========== -->
-    <!-- <div id="preloader">
+    <div id="preloader">
       <div class="spinner"></div>
-    </div> -->
+    </div>
     <!-- ======== Preloader =========== -->
 
     <!-- ======== sidebar-nav start =========== -->
@@ -292,12 +294,7 @@
                     <i class="fas fa-chevron-left me-2"></i> Menu
                   </button>
                 </div>
-                <div class="header-search d-none d-md-flex">
-                  <form action="#">
-                    <input type="text" placeholder="Search..." />
-                    <button><i class="lni lni-search-alt"></i></button>
-                  </form>
-                </div>
+        
               </div>
             </div>
             @if(auth()->check() && (auth()->user()->isCouturier() || auth()->user()->isMercerie()))
@@ -417,17 +414,19 @@
                 <!-- message end -->
                 <!-- profile start -->
                  
+                @php $user = auth()->user(); @endphp
                 <div class="profile-box ml-15">
                   <button class="dropdown-toggle bg-transparent border-0" type="button" id="profile"
                     data-bs-toggle="dropdown" aria-expanded="false">
                     <div class="profile-info">
                       <div class="info">
                         <div class="image">
-                          <img src="assets/images/profile/profile-image.png" alt="" />
+                          <img src="{{ $user->avatar_url }}" alt="Avatar" class="rounded-circle" width="60">
+
                         </div>
                         <div>
-                          <h6 class="fw-500">Adam Joe</h6>
-                          <p>Admin</p>
+                          <h6 class="fw-500">{{ auth()->user()->name }}</h6>
+                          <p>{{ auth()->user()->email }}</p>
                         </div>
                       </div>
                     </div>
@@ -436,17 +435,17 @@
                     <li>
                       <div class="author-info flex items-center !p-1">
                         <div class="image">
-                          <img src="assets/images/profile/profile-image.png" alt="image">
+                          <img src="{{ $user->avatar_url }}" alt="image">
                         </div>
                         <div class="content">
-                          <h4 class="text-sm">Adam Joe</h4>
-                          <a class="text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white text-xs" href="#">Email@gmail.com</a>
+                          <h4 class="text-sm">{{ auth()->user()->name }}</h4>
+                          <a class="text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white text-xs" href="#">{{ auth()->user()->email }}</a>
                         </div>
                       </div>
                     </li>
                     <li class="divider"></li>
                     <li>
-                      <a href="#0">
+                      <a href="{{ route('merceries.profile.edit') }}">
                         <i class="fa-solid fa-user"></i> View Profile
                       </a>
                     </li>
@@ -478,20 +477,20 @@
         </div>
       </header>
       <!-- ========== header end ========== -->
-        @if(session('success'))
+        <!-- @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
         @if(session('error'))
             <div class="alert alert-error">{{ session('error') }}</div>
-        @endif
+        @endif -->
       <!-- ========== section start ========== -->
         <section class="section">
             <div class="container-fluid">
                 <!-- ========== title-wrapper start ========== -->
                 <div class="title-wrapper pt-30">
                     <div class="row align-items-center">
-                    <div class="col-md-6">
+                    <div class="col-lg-12">
                             <div class="title">
                                 @yield('content')
                             </div>
@@ -539,9 +538,27 @@
     <script src="https://cdn.jsdelivr.net/npm/jvectormap@2.0.5/jquery-jvectormap-world-mill.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/polyfill@3.0.0/polyfill.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- À la fin de votre body dans layouts/app.blade.php -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/fr.js"></script>
 
      <!-- Scripts globaux -->
     <script src="{{ asset('js/app.js') }}"></script>
+
+    @if(session('success'))
+      <script>
+        Swal.fire({
+          icon: 'success',
+          title: 'Succès',
+          text: '{{ session('success') }}',
+          showConfirmButton: false,
+          timer: 2000
+        });
+      </script>
+    @endif
+
 
     @if(session('success') || session('error'))
 <script>
