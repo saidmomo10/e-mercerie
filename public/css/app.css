@@ -2233,6 +2233,7 @@ h6,
   transform: rotate(45deg);
   -webkit-transition: all 0.15s ease-in-out;
   transition: all 0.15s ease-in-out;
+  display: none;
 }
 .select-style-1 .select-position.select-sm::after {
   margin-top: -8px;
