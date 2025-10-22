@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SupplyController;
 use App\Http\Controllers\MerchantController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\MerchantSupplyController;
 use App\Http\Controllers\PriceComparisonController;
 
@@ -71,11 +72,14 @@ Route::middleware('auth')->group(function () {
         Route::put('/merceries/profile/update', [MerchantController::class, 'updateProfile'])->name('merceries.profile.update');
 
         Route::delete('/supplies/{id}', [MerchantSupplyController::class, 'destroy'])->name('merchant.supplies.destroy');
-        // Gestion des commandes reçues par la mercerie
-        Route::post('/orders/{id}/accept', [OrderController::class, 'accept'])->name('orders.accept');
-        Route::post('/orders/{id}/reject', [OrderController::class, 'reject'])->name('orders.reject');
 
     });
+
+    Route::prefix('merchant')->name('merchant.')->group(function() {
+        Route::post('/orders/{id}/accept', [OrderController::class, 'accept'])->name('orders.accept');
+        Route::post('/orders/{id}/reject', [OrderController::class, 'reject'])->name('orders.reject');
+    });
+
 
     Route::middleware(['auth'])->group(function () {
         Route::get('/merchant/supplies/create', [MerchantSupplyController::class, 'create'])
@@ -94,6 +98,15 @@ Route::middleware('auth')->group(function () {
 
     // Recherche AJAX (live)
     Route::get('/api/fournitures/search', [SupplyController::class, 'searchAjax'])->middleware('auth')->name('api.supplies.search');
+
+    // Routes pour les notifications
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+        Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+        Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+        Route::delete('/', [NotificationController::class, 'clearAll'])->name('notifications.clearAll');
+    });
 
 
 });

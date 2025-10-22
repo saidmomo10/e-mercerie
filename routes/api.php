@@ -2,11 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-// use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SupplyController;
 use App\Http\Controllers\MerchantSupplyController;
 use App\Http\Controllers\PriceComparisonController;
-use App\Http\Controllers\MerchantOrderController;
+// use App\Http\Controllers\MerchantOrderController;
 
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -23,8 +23,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/supplies', [MerchantSupplyController::class, 'store']);
         Route::put('/supplies/{id}', [MerchantSupplyController::class, 'update']);
         // Accept or reject an order assigned to this mercerie
-        Route::post('/orders/{id}/accept', [MerchantOrderController::class, 'accept']);
-        Route::post('/orders/{id}/reject', [MerchantOrderController::class, 'reject']);
+        // Route::post('/orders/{id}/accept', [MerchantOrderController::class, 'accept']);
+        // Route::post('/orders/{id}/reject', [MerchantOrderController::class, 'reject']);
     });
 
     Route::middleware('role:couturier')->prefix('orders')->group(function () {

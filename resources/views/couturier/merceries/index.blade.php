@@ -5,7 +5,7 @@
     <h1 class="mb-4">Liste des merceries</h1>
 
     <!-- Barre de recherche avec spinner -->
-    <div class="header-search d-none d-md-flex mb-3 position-relative">
+    <div class="header-search d-md-flex mb-3 position-relative">
         <input type="text" id="search-merceries" class="form-control" 
                placeholder="Rechercher une mercerie..." autocomplete="off" />
 

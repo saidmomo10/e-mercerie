@@ -58,14 +58,14 @@
 
                 @if(auth()->user()->isMercerie() && $order->status === 'pending')
                     <div class="mt-4 d-flex gap-3">
-                        <form action="{{ route('orders.accept', $order->id) }}" method="POST">
+                        <form action="{{ route('merchant.orders.accept', $order->id) }}" method="POST">
                             @csrf
                             <button type="submit" class="main-btn success-btn-outline rounded-full btn-hover">
                                 <i class="lni lni-checkmark-circle"></i> Accepter
                             </button>
                         </form>
 
-                        <form action="{{ route('orders.reject', $order->id) }}" method="POST">
+                        <form action="{{ route('merchant.orders.reject', $order->id) }}" method="POST">
                             @csrf
                             <button type="submit" class="main-btn danger-btn-outline rounded-full btn-hover">
                                 <i class="lni lni-close"></i> Rejeter

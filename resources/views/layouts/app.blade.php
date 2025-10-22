@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+  <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="shortcut icon" href="assets/images/favicon.svg" type="image/x-icon" />
@@ -20,6 +21,9 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <!-- Pour les notifications en temps réel -->
+    <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
 
     @stack('styles')
   </head>
@@ -172,7 +176,7 @@
                 </ul>
             </li> -->
         @endguest
-          <!-- <li class="nav-item nav-item-has-children">
+          <li class="nav-item nav-item-has-children">
             <a
               href="#0"
               class="collapsed"
@@ -249,7 +253,7 @@
           <span class="divider"><hr /></span>
 
           <li class="nav-item">
-            <a href="notification.html">
+            <a href="{{ route('notifications.index') }}">
               <span class="icon">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -264,7 +268,7 @@
               </span>
               <span class="text">Notifications</span>
             </a>
-          </li> -->
+          </li>
         </ul>
       </nav>
       <div class="promo-box">
@@ -301,8 +305,8 @@
             <div class="col-lg-7 col-md-7 col-6">
               <div class="header-right">
                 <!-- notification start -->
-                <div class="notification-box ml-15 d-none d-md-flex">
-                  <button class="dropdown-toggle" type="button" id="notification" data-bs-toggle="dropdown"
+                <div class="notification-box ml-15 d-md-flex">
+                  <button class="dropdown-toggle position-relative" type="button" id="notification" data-bs-toggle="dropdown"
                     aria-expanded="false">
                     <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path
@@ -312,54 +316,40 @@
                         d="M10.1157 2.74999C10.1157 2.24374 10.5117 1.83333 11 1.83333C11.4883 1.83333 11.8842 2.24374 11.8842 2.74999V2.82604C14.3932 3.26245 16.3051 5.52474 16.3051 8.24999V14.287C16.3051 14.5301 16.3982 14.7633 16.564 14.9352L18.2029 16.6342C18.4814 16.9229 18.2842 17.4167 17.8903 17.4167H4.10961C3.71574 17.4167 3.5185 16.9229 3.797 16.6342L5.43589 14.9352C5.6017 14.7633 5.69485 14.5301 5.69485 14.287V8.24999C5.69485 5.52474 7.60672 3.26245 10.1157 2.82604V2.74999Z"
                         fill="" />
                     </svg>
-                    <span></span>
+                    @php $unreadCount = auth()->check() ? auth()->user()->unreadNotifications()->count() : 0; @endphp
+                    <span id="notification-unread-badge" data-count="{{ $unreadCount }}" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:{{ $unreadCount > 0 ? 'inline-block' : 'none' }}; font-size:0.65rem;">{{ $unreadCount }}</span>
                   </button>
-                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notification">
-                    <li>
-                      <a href="#0">
-                        <div class="image">
-                          <img src="assets/images/lead/lead-6.png" alt="" />
-                        </div>
-                        <div class="content">
-                          <h6>
-                            John Doe
-                            <span class="text-regular">
-                              comment on a product.
-                            </span>
-                          </h6>
-                          <p>
-                            Lorem ipsum dolor sit amet, consect etur adipiscing
-                            elit Vivamus tortor.
-                          </p>
-                          <span>10 mins ago</span>
-                        </div>
-                      </a>
-                    </li>
-                    <li>
-                      <a href="#0">
-                        <div class="image">
-                          <img src="assets/images/lead/lead-1.png" alt="" />
-                        </div>
-                        <div class="content">
-                          <h6>
-                            Jonathon
-                            <span class="text-regular">
-                              like on a product.
-                            </span>
-                          </h6>
-                          <p>
-                            Lorem ipsum dolor sit amet, consect etur adipiscing
-                            elit Vivamus tortor.
-                          </p>
-                          <span>10 mins ago</span>
-                        </div>
-                      </a>
-                    </li>
+                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notification" style="width:320px;">
+                    @php
+                      $dropdownNotifications = auth()->user()->notifications()->latest()->take(3)->get();
+                    @endphp
+                    @forelse($dropdownNotifications as $notification)
+                      <li>
+                        <a href="{{ $notification->data['url'] ?? '#' }}" class="d-flex align-items-start p-2 text-decoration-none text-dark">
+                          <div class="image me-2">
+                            <img src="{{ asset('assets/images/lead/lead-6.png') }}" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:6px;" />
+                          </div>
+                          <div class="content">
+                            <h6 class="mb-1 {{ $notification->read_at ? '' : 'fw-bold' }}">
+                              {!! \Illuminate\Support\Str::limit($notification->data['message'] ?? 'Notification', 80) !!}
+                              @if(!$notification->read_at)
+                                <span class="badge bg-primary ms-2">Nouveau</span>
+                              @endif
+                            </h6>
+                            <p class="mb-0 text-sm text-gray">{{ $notification->created_at->diffForHumans() }}</p>
+                          </div>
+                        </a>
+                      </li>
+                    @empty
+                      <li class="px-3 py-2 text-center text-muted">Aucune notification</li>
+                    @endforelse
+                    <li><hr class="dropdown-divider"></li>
+                    <li class="px-3"><a href="{{ route('notifications.index') }}">Voir toutes les notifications</a></li>
                   </ul>
                 </div>
                 <!-- notification end -->
                 <!-- message start -->
-                <div class="header-message-box ml-15 d-none d-md-flex">
+                <div class="header-message-box ml-15">
                   <button class="dropdown-toggle" type="button" id="message" data-bs-toggle="dropdown"
                     aria-expanded="false">
                     <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -424,7 +414,7 @@
                           <img src="{{ $user->avatar_url }}" alt="Avatar" class="rounded-circle" width="60">
 
                         </div>
-                        <div>
+                        <div class=" d-none d-md-block ms-2">
                           <h6 class="fw-500">{{ auth()->user()->name }}</h6>
                           <p>{{ auth()->user()->email }}</p>
                         </div>
@@ -476,6 +466,10 @@
           </div>
         </div>
       </header>
+      <!-- Container des notifications -->
+    <div id="notifications-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+        <!-- Les notifications toast apparaîtront ici -->
+    </div>
       <!-- ========== header end ========== -->
         <!-- @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
@@ -580,6 +574,143 @@
     });
 </script>
 @endif
+
+
+  <!-- Script pour les notifications -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/laravel-echo/1.11.3/echo.iife.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pusher/8.0.0/pusher.min.js"></script>
+  <script>
+        // Écoute des notifications Laravel
+    // Initialisation de Laravel Echo avec Pusher
+    Pusher.logToConsole = false;
+    // Enhanced Echo initialization with explicit ws options and auth headers for debugging
+    window.Echo = new Echo({
+      broadcaster: 'pusher',
+      key: '{{ config('broadcasting.connections.pusher.key') }}',
+      cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}',
+      wsHost: '{{ env('VITE_PUSHER_HOST') ?: (env('PUSHER_HOST') ?: 'ws-' . env('PUSHER_APP_CLUSTER')) }}',
+      wsPort: {{ env('PUSHER_PORT', 443) }},
+      wssPort: {{ env('PUSHER_PORT', 443) }},
+      forceTLS: {{ env('PUSHER_SCHEME', 'https') === 'https' ? 'true' : 'false' }},
+      disableStats: true,
+      enabledTransports: ['ws', 'wss'],
+      auth: {
+        headers: {
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      }
+    });
+
+    // Debug: log pusher connection events
+    try {
+      const pusher = Echo.connector?.pusher;
+      if (pusher) {
+        pusher.connection.bind('connected', () => console.info('Pusher connected'));
+        pusher.connection.bind('disconnected', () => console.warn('Pusher disconnected'));
+        pusher.connection.bind('error', (err) => console.error('Pusher error', err));
+        pusher.connection.bind('state_change', (states) => console.debug('Pusher state change', states));
+      }
+    } catch (e) {
+      console.warn('Echo/Pusher debug setup failed', e);
+    }
+
+    // Helper to update unread badge
+    function setUnreadBadge(count) {
+      const badge = document.getElementById('notification-unread-badge');
+      if (!badge) return;
+      badge.dataset.count = count;
+      badge.textContent = count;
+      badge.style.display = count > 0 ? 'inline-block' : 'none';
+    }
+
+    function incrementUnreadBadge(by = 1) {
+      const badge = document.getElementById('notification-unread-badge');
+      if (!badge) return;
+      const cur = parseInt(badge.dataset.count || '0', 10) || 0;
+      setUnreadBadge(cur + by);
+    }
+
+    function decrementUnreadBadge(by = 1) {
+      const badge = document.getElementById('notification-unread-badge');
+      if (!badge) return;
+      const cur = parseInt(badge.dataset.count || '0', 10) || 0;
+      const next = Math.max(0, cur - by);
+      setUnreadBadge(next);
+    }
+
+    // Écoute des notifications pour l'utilisateur connecté
+    Echo.private('App.Models.User.{{ auth()->id() }}')
+        .notification((notification) => {
+            showToastNotification(notification);
+            // increment unread badge when a new notification arrives
+            incrementUnreadBadge(1);
+        });
+
+        // Fonction pour afficher les notifications toast
+        function showToastNotification(notification) {
+            const container = document.getElementById('notifications-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast align-items-center text-white bg-primary border-0';
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <strong>${notification.message || 'Nouvelle notification'}</strong>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            // Supprimer le toast après disparition
+            toast.addEventListener('hidden.bs.toast', function () {
+                toast.remove();
+            });
+        }
+    </script>
+
+  <script>
+    // Mark dropdown notification as read when clicked, then navigate
+    document.addEventListener('DOMContentLoaded', function() {
+      const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+      document.querySelectorAll('ul.dropdown-menu[aria-labelledby="notification"] a').forEach(a => {
+        a.addEventListener('click', function(e) {
+          const href = this.getAttribute('href') || '#';
+          // find notification id from href or data attribute
+          // expecting url like /orders/123 or with query ?notif=ID
+          const url = new URL(href, window.location.origin);
+          const notifId = url.searchParams.get('notif');
+
+          if (notifId) {
+            e.preventDefault();
+            fetch(`/notifications/${notifId}/read`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrf
+              },
+              body: JSON.stringify({})
+            }).then(() => {
+              // decrement unread badge and navigate
+              try { decrementUnreadBadge(1); } catch(e) {}
+              window.location.href = href;
+            }).catch(() => {
+              window.location.href = href;
+            });
+          }
+          // otherwise let the anchor behave normally
+        });
+      });
+    });
+  </script>
 
 
     <!-- Scripts spécifiques -->

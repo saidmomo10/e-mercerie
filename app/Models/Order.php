@@ -30,4 +30,39 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+
+    /**
+     * Vérifie si la commande peut être acceptée (stock suffisant)
+     */
+    public function canBeAccepted()
+    {
+        foreach ($this->items as $item) {
+            if (!$item->merchantSupply->hasSufficientStock($item->quantity)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Accepte la commande et décrémente les stocks
+     */
+    public function accept()
+    {
+        if ($this->status !== 'pending') {
+            throw new \Exception('Cette commande a déjà été traitée.');
+        }
+
+        if (!$this->canBeAccepted()) {
+            throw new \Exception('Stock insuffisant pour certaines fournitures.');
+        }
+
+        \DB::transaction(function () {
+            foreach ($this->items as $item) {
+                $item->merchantSupply->safeDecrement($item->quantity);
+            }
+            
+            $this->update(['status' => 'confirmed']);
+        });
+    }
 }

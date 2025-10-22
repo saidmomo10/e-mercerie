@@ -4,36 +4,64 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\MerchantSupply;
 use Illuminate\Http\Request;
+use App\Models\MerchantSupply;
 use Illuminate\Support\Facades\DB;
+use App\Notifications\OrderAccepted;
+use App\Notifications\OrderRejected;
+use App\Notifications\NewOrderReceived;
 
 class OrderController extends Controller
 {
     /**
      * Affiche les commandes selon le rôle (Couturier / Mercerie)
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
+        $search = $request->input('search');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        $query = null;
 
         if ($user->isCouturier()) {
-            // Commandes passées par le couturier
-            $orders = $user->ordersAsCouturier()->with(['items.merchantSupply', 'mercerie'])->latest()->get();
+            $query = $user->ordersAsCouturier()
+                ->with(['items.merchantSupply', 'mercerie'])
+                ->latest();
         } elseif ($user->isMercerie()) {
-            // Commandes reçues par la mercerie
-            $orders = $user->ordersAsMercerie()->with(['items.merchantSupply', 'couturier'])->latest()->get();
-        } else {
-            $orders = collect();
+            $query = $user->ordersAsMercerie()
+                ->with(['items.merchantSupply', 'couturier'])
+                ->latest();
         }
 
-        return view('orders.index', compact('orders'));
+        if ($query && $search) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('mercerie', fn($m) => $m->where('name', 'like', "%$search%"))
+                ->orWhere('id', 'like', "%$search%")
+                ->orWhere('status', 'like', "%$search%");
+            });
+        }
+
+        if ($query && ($startDate || $endDate)) {
+            $query->whereBetween('created_at', [
+                $startDate ? date('Y-m-d 00:00:00', strtotime($startDate)) : '2000-01-01 00:00:00',
+                $endDate ? date('Y-m-d 23:59:59', strtotime($endDate)) : now(),
+            ]);
+        }
+
+        $orders = $query ? $query->paginate(2)->appends($request->query()) : collect();
+
+        return view('orders.index', compact('orders', 'search', 'startDate', 'endDate'));
     }
+
+
+
 
     /**
      * Création d'une commande depuis le formulaire Web
      */
-    public function storeWeb(Request $request)
+     public function storeWeb(Request $request)
     {
         $request->validate([
             'mercerie_id' => 'required|exists:users,id',
@@ -84,6 +112,10 @@ class OrderController extends Controller
                 $data['order_id'] = $order->id;
                 OrderItem::create($data);
             }
+
+            // Notification à la mercerie
+            $mercerie = $order->mercerie;
+            $mercerie->notify(new NewOrderReceived($order));
 
             DB::commit();
             return redirect()->route('orders.index')->with('success', 'Commande créée avec succès !');
@@ -144,6 +176,17 @@ class OrderController extends Controller
         // Mise à jour du total
         $order->update(['total_amount' => $total]);
 
+        // Notification à la mercerie (similaire à storeWeb)
+        try {
+            $mercerie = $order->mercerie;
+            if ($mercerie) {
+                $mercerie->notify(new NewOrderReceived($order));
+            }
+        } catch (\Exception $e) {
+            // Ne bloque pas l'utilisateur, loggons juste l'erreur
+            logger()->error('Erreur lors de l\'envoi de la notification NewOrderReceived: ' . $e->getMessage());
+        }
+
         return redirect()->route('orders.index')->with('success', 'Commande effectuée avec succès.');
     }
 
@@ -197,64 +240,105 @@ class OrderController extends Controller
 
 
 
-    public function accept($id)
-{
-    $order = Order::with('items.merchantSupply')->findOrFail($id);
-    $user = auth()->user();
+     public function accept($id)
+    {
+        $order = Order::with(['items.merchantSupply.supply'])->findOrFail($id);
+        $user = auth()->user();
 
-    // Vérifie que la commande appartient à la mercerie connectée
-    if ($order->mercerie_id !== $user->id) {
-        abort(403, 'Action non autorisée.');
-    }
-
-    if ($order->status !== 'pending') {
-        return back()->with('error', 'Cette commande a déjà été traitée.');
-    }
-
-    DB::beginTransaction();
-
-    try {
-        foreach ($order->items as $item) {
-            $supply = $item->merchantSupply;
-
-            if ($supply->stock_quantity < $item->quantity) {
-                return back()->with('error', "Stock insuffisant pour {$supply->supply->name}.");
-            }
-
-            // Décrémentation du stock
-            $supply->decrement('stock_quantity', $item->quantity);
+        if ($order->mercerie_id !== $user->id) {
+            abort(403, 'Action non autorisée.');
         }
 
-        $order->update(['status' => 'confirmed']);
+        if ($order->status !== 'pending') {
+            return back()->with('error', 'Cette commande a déjà été traitée.');
+        }
 
-        DB::commit();
+        DB::beginTransaction();
 
-        return back()->with('success', 'Commande acceptée avec succès.');
+        try {
+            foreach ($order->items as $item) {
+                $merchantSupply = $item->merchantSupply;
 
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return back()->with('error', 'Erreur : ' . $e->getMessage());
+                if ($merchantSupply->stock_quantity < $item->quantity) {
+                    $supplyName = $merchantSupply->supply->name ?? 'Fourniture inconnue';
+                    throw new \Exception("Stock insuffisant pour '{$supplyName}'. Stock disponible: {$merchantSupply->stock_quantity}, Quantité demandée: {$item->quantity}");
+                }
+            }
+
+            foreach ($order->items as $item) {
+                $merchantSupply = $item->merchantSupply;
+                $merchantSupply->decrement('stock_quantity', $item->quantity);
+
+                // Notification stock faible si nécessaire
+                if ($merchantSupply->stock_quantity <= 5) {
+                    $user->notify(new LowStockAlert($merchantSupply));
+                }
+            }
+
+            $order->update(['status' => 'confirmed']);
+
+            // Notification au couturier
+            $order->couturier->notify(new OrderAccepted($order));
+
+            DB::commit();
+
+            return back()->with('success', 'Commande acceptée et stock mis à jour avec succès.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error("Erreur lors de l'acceptation de la commande", [
+                'order_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return back()->with('error', 'Erreur : ' . $e->getMessage());
+        }
     }
+
+    /**
+ * Vérifie la disponibilité du stock pour une commande
+ */
+private function checkStockAvailability(Order $order)
+{
+    $unavailableItems = [];
+    
+    foreach ($order->items as $item) {
+        $merchantSupply = $item->merchantSupply;
+        
+        if ($merchantSupply->stock_quantity < $item->quantity) {
+            $unavailableItems[] = [
+                'supply_name' => $merchantSupply->supply->name,
+                'available' => $merchantSupply->stock_quantity,
+                'requested' => $item->quantity
+            ];
+        }
+    }
+    
+    return $unavailableItems;
 }
+
 
 
 public function reject($id)
-{
-    $order = Order::findOrFail($id);
-    $user = auth()->user();
+    {
+        $order = Order::findOrFail($id);
+        $user = auth()->user();
 
-    if ($order->mercerie_id !== $user->id) {
-        abort(403, 'Action non autorisée.');
+        if ($order->mercerie_id !== $user->id) {
+            abort(403, 'Action non autorisée.');
+        }
+
+        if ($order->status !== 'pending') {
+            return back()->with('error', 'Cette commande a déjà été traitée.');
+        }
+
+        $order->update(['status' => 'cancelled']);
+
+        // Notification au couturier
+        $order->couturier->notify(new OrderRejected($order));
+
+        return back()->with('success', 'Commande rejetée avec succès.');
     }
-
-    if ($order->status !== 'pending') {
-        return back()->with('error', 'Cette commande a déjà été traitée.');
-    }
-
-    $order->update(['status' => 'cancelled']);
-
-    return back()->with('success', 'Commande rejetée avec succès.');
-}
 
 
 
