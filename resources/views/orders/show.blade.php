@@ -19,8 +19,11 @@
 
                 <div class="border-bottom pb-2 mb-3 d-flex justify-content-between">
                     <div>
+                        @if(auth()->user()->isMercerie())
                         <p class="mb-1"><strong>Couturier :</strong> {{ $order->couturier->name }}</p>
+                        @else
                         <p class="mb-1"><strong>Mercerie :</strong> {{ $order->mercerie->name }}</p>
+                        @endif
                     </div>
                     <div class="text-end">
                         <p class="mb-1"><strong>Total :</strong> 
