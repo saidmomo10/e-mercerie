@@ -37,8 +37,7 @@ class MerchantSupplyController extends Controller
     public function searchSupplies(Request $request)
     {
         $search = $request->get('q');
-        
-        $supplies = Supply::where('name', 'LIKE', "%{$search}%")
+        $supplies = Supply::whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($search) . '%'])
             ->limit(20)
             ->get(['id', 'name as text']);
 

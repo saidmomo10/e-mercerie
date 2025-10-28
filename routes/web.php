@@ -63,7 +63,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Mercerie
-    Route::prefix('merchant')->group(function() {
+    Route::prefix('merchant')->middleware('auth', 'role:mercerie')->group(function() {
         Route::get('/supplies', [MerchantSupplyController::class, 'index'])->name('merchant.supplies.index');
         Route::post('/supplies', [MerchantSupplyController::class, 'store'])->name('merchant.supplies.store');
         Route::get('/supplies/{id}/edit', [MerchantSupplyController::class, 'edit'])->name('merchant.supplies.edit');
@@ -75,7 +75,7 @@ Route::middleware('auth')->group(function () {
 
     });
 
-    Route::prefix('merchant')->name('merchant.')->group(function() {
+    Route::prefix('merchant')->name('merchant.')->middleware('auth', 'role:mercerie')->group(function() {
         Route::post('/orders/{id}/accept', [OrderController::class, 'accept'])->name('orders.accept');
         Route::post('/orders/{id}/reject', [OrderController::class, 'reject'])->name('orders.reject');
     });
@@ -89,7 +89,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Couturier
-    Route::prefix('couturier')->middleware('auth')->group(function () {
+    Route::prefix('couturier')->middleware('auth', 'role:couturier')->group(function () {
         Route::get('/merceries', [MerchantController::class, 'index'])->name('merceries.index');
         Route::get('/merceries/{id}', [MerchantController::class, 'show'])->name('merceries.show');
         Route::post('/merceries/{id}/order', [OrderController::class, 'storeFromMerchant'])->name('merceries.order');

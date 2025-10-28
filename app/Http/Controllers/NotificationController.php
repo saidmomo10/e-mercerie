@@ -9,7 +9,7 @@ class NotificationController extends Controller
 {
     public function index()
     {
-        $notifications = Auth::user()->notifications()->paginate(20);
+        $notifications = Auth::user()->notifications()->paginate(5);
         
         return view('notifications.index', compact('notifications'));
     }
@@ -19,7 +19,10 @@ class NotificationController extends Controller
         $notification = Auth::user()->notifications()->findOrFail($id);
         $notification->markAsRead();
 
-        return back()->with('success', 'Notification marquée comme lue.');
+        if (request()->ajax()) {
+            return response()->json(['success' => true]);
+        }
+        return back()->with('success');
     }
 
     public function markAllAsRead()

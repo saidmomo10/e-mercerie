@@ -17,7 +17,7 @@
             <thead>
               <tr>
                 <th><h6>Fourniture</h6></th>
-                <th><h6>Prix (FCFA)</h6></th>
+                <th><h6>Prix</h6></th>
                 <th><h6>Quantité</h6></th>
                 <th><h6>Actions</h6></th>
               </tr>
