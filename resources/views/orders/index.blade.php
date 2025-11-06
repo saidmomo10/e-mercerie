@@ -1,118 +1,336 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mt-4">
-    <h1 class="mb-4 text-primary fw-bold">Mes commandes</h1>
+<div class="orders-container">
+    <h1 class="page-title">Mes commandes</h1>
 
-    <!-- Barre de recherche et filtres -->
-    <form method="GET" action="{{ route('orders.index') }}" class="mb-4" id="filterForm">
-        <div class="row g-3 align-items-end">
-
-            <div class="col-md-4">
-                <label for="search" class="form-label">Recherche</label>
-                <input type="text" name="search" id="search" class="form-control shadow-sm"
-                       placeholder="Nom, ID ou statut..."
+    <!-- 🔍 Barre de recherche -->
+    <form method="GET" action="{{ route('orders.index') }}" id="filterForm" class="filter-bar">
+        <div class="filter-group">
+            <div class="filter-item">
+                <label for="search">Recherche</label>
+                <input type="text" name="search" id="search" placeholder="Nom, ID ou statut..."
                        value="{{ request('search') }}">
             </div>
-
-            <div class="col-md-3">
-                <label for="start_date" class="form-label">Du</label>
-                <input type="date" name="start_date" id="start_date" class="form-control shadow-sm"
-                       value="{{ request('start_date') }}">
+            <div class="filter-item">
+                <label for="start_date">Du</label>
+                <input type="date" name="start_date" id="start_date" value="{{ request('start_date') }}">
             </div>
-
-            <div class="col-md-3">
-                <label for="end_date" class="form-label">Au</label>
-                <input type="date" name="end_date" id="end_date" class="form-control shadow-sm"
-                       value="{{ request('end_date') }}">
+            <div class="filter-item">
+                <label for="end_date">Au</label>
+                <input type="date" name="end_date" id="end_date" value="{{ request('end_date') }}">
             </div>
-
-            <div class="col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-primary w-50 shadow-sm">
-                    <i class="fa-solid fa-filter"></i>
-                </button>
-
-                <button type="button" id="resetBtn" class="btn btn-outline-secondary w-50 shadow-sm" title="Réinitialiser les filtres">
-                    <i class="fa-solid fa-rotate-left"></i>
-                </button>
+            <div class="filter-actions">
+                <button type="submit" class="soft-btn purple"><i class="fa-solid fa-filter"></i></button>
+                <button type="button" id="resetBtn" class="soft-btn outline"><i class="fa-solid fa-rotate-left"></i></button>
             </div>
         </div>
     </form>
 
-    @forelse($orders as $order)
-        <div class="card mb-4 shadow-sm border-0 rounded-3">
-            <div class="card-header d-flex justify-content-between align-items-center bg-light rounded-top-3">
-                <span>
-                    <strong class="text-dark">Commande #{{ $order->id }}</strong> - 
-                    <span class="badge rounded-pill bg-{{ 
-                        $order->status === 'pending' ? 'warning' : 
-                        ($order->status === 'confirmed' ? 'success' : 'danger')
-                    }}">
-                        {{ ucfirst($order->status) }}
-                    </span>
-                </span>
-                <span class="text-muted small">
-                    {{ $order->created_at->format('d/m/Y H:i') }}<br>
-                    <strong class="text-dark">{{ number_format($order->total_amount, 0, ',', ' ') }} FCFA</strong>
-                </span>
-            </div>
+    <!-- 🧾 Liste des commandes -->
+    <section class="section">
+        <div class="cards-grid">
+            @forelse($orders as $order)
+                <div class="order-card">
+                    <div class="order-header">
+                        <h3>Commande #{{ $order->id }}</h3>
+                        <div class="order-meta">
+                            <span class="date">{{ $order->created_at->format('d/m/Y H:i') }}</span>
+                            <span class="price">{{ number_format($order->total_amount, 0, ',', ' ') }} FCFA</span>
+                        </div>
+                    </div>
 
-            <div class="card-body">
-                @if(auth()->user()->isCouturier())
-                    <p class="fw-semibold text-secondary mb-2">{{ $order->mercerie->name }}</p>
-                @endif
+                    <div class="status-line">
+                        <span class="status-badge {{ $order->status }}">
+                            {{ ucfirst($order->status) }}
+                        </span>
+                    </div>
 
-                @if(auth()->user()->isMercerie() && $order->status === 'pending')
-    <div class="mt-3">
-        @if($order->canBeAccepted())
-            <form action="{{ route('merchant.orders.accept', $order->id) }}" method="POST" class="d-inline">
-                @csrf
-                <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-3 me-2">
-                    <i class="fa-solid fa-check"></i> Accepter
-                </button>
-            </form>
-        @else
-            <span class="badge bg-warning me-2">
-                <i class="fa-solid fa-exclamation-triangle"></i> Stock insuffisant
-            </span>
-        @endif
+                    @if(auth()->user()->isCouturier())
+                        <p class="merchant-name">Mercerie : {{ $order->mercerie->name }}</p>
+                    @endif
 
-        <form action="{{ route('merchant.orders.reject', $order->id) }}" method="POST" class="d-inline">
-            @csrf
-            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                <i class="fa-solid fa-xmark"></i> Rejeter
-            </button>
-        </form>
-    </div>
-@endif
+                    @if(auth()->user()->isMercerie() && $order->status === 'pending')
+                        <div class="actions">
+                            @if($order->canBeAccepted())
+                                <form action="{{ route('merchant.orders.accept', $order->id) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="soft-btn green">
+                                        <i class="fa-solid fa-check"></i> Accepter
+                                    </button>
+                                </form>
+                            @else
+                                <span class="badge-warning">
+                                    <i class="fa-solid fa-exclamation-triangle"></i> Stock insuffisant
+                                </span>
+                            @endif
 
-                <a href="{{ route('orders.show', $order->id) }}" 
-                   class="btn btn-outline-primary btn-sm rounded-pill px-3 mt-3">
-                    <i class="fa-solid fa-eye"></i> Détails
-                </a>
-            </div>
+                            <form action="{{ route('merchant.orders.reject', $order->id) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="soft-btn red">
+                                    <i class="fa-solid fa-xmark"></i> Rejeter
+                                </button>
+                            </form>
+                        </div>
+                    @endif
+
+                    <a href="{{ route('orders.show', $order->id) }}" class="soft-btn outline mt-3">
+                        <i class="fa-solid fa-eye"></i> Voir les détails
+                    </a>
+                </div>
+            @empty
+                <p class="empty-text">Aucune commande trouvée.</p>
+            @endforelse
         </div>
-    @empty
-        <div class="alert alert-info text-center mt-5">
-            <i class="fa-solid fa-info-circle"></i> Aucune commande trouvée.
-        </div>
-    @endforelse
+    </section>
 
     <!-- Pagination -->
     @if($orders instanceof \Illuminate\Pagination\LengthAwarePaginator)
-        <div class="d-flex justify-content-center mt-4">
+        <div class="pagination-container">
             {{ $orders->links('pagination::bootstrap-5') }}
         </div>
     @endif
 </div>
 
-<!-- Script pour réinitialiser le formulaire -->
+<!-- 🔁 Script pour reset -->
 <script>
-    document.getElementById('resetBtn').addEventListener('click', function() {
-        document.getElementById('search').value = '';
-        document.getElementById('start_date').value = '';
-        document.getElementById('end_date').value = '';
-        document.getElementById('filterForm').submit();
-    });
+document.getElementById('resetBtn').addEventListener('click', function() {
+    document.getElementById('search').value = '';
+    document.getElementById('start_date').value = '';
+    document.getElementById('end_date').value = '';
+    document.getElementById('filterForm').submit();
+});
 </script>
+
+<style>
+/* --- PALETTE --- */
+:root {
+    --primary-color: #4F0341;
+    --secondary-color: #9333ea;
+    --background-color: #fff;
+    --text-color: #2d2d2d;
+    --light-text: #777;
+    --border-color: #f0f0f0;
+    --danger-color: #e11d48;
+    --success-color: #16a34a;
+}
+
+/* --- CONTAINER --- */
+.orders-container {
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 1rem;
+    color: var(--text-color);
+}
+
+.page-title {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 2rem;
+}
+
+/* --- FILTRE --- */
+.filter-bar {
+    background: var(--background-color);
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+    padding: 1.5rem;
+    margin-bottom: 2.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.filter-group {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
+.filter-item label {
+    font-size: 0.9rem;
+    color: var(--light-text);
+    display: block;
+    margin-bottom: 0.3rem;
+}
+
+.filter-item input {
+    width: 100%;
+    padding: 0.6rem;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    font-size: 0.95rem;
+    color: var(--text-color);
+}
+
+.filter-actions {
+    display: flex;
+    align-items: end;
+    gap: 0.5rem;
+}
+
+/* --- SECTION --- */
+.section {
+    margin-top: 2rem;
+}
+
+/* --- GRILLE --- */
+.cards-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+}
+
+/* --- CARD --- */
+.order-card {
+    background: var(--background-color);
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.order-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 22px rgba(147,51,234,0.15);
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.order-header h3 {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.order-meta {
+    text-align: right;
+}
+
+.order-meta .date {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--light-text);
+}
+
+.order-meta .price {
+    color: var(--secondary-color);
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+/* --- STATUT --- */
+.status-line {
+    margin-bottom: 1rem;
+}
+
+.status-badge {
+    padding: 0.3rem 0.7rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.status-badge.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+.status-badge.confirmed {
+    background: #dcfce7;
+    color: #166534;
+}
+.status-badge.rejected {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* --- ACTIONS --- */
+.actions {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.badge-warning {
+    background: #fef9c3;
+    color: #854d0e;
+    padding: 0.4rem 0.8rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+}
+
+/* --- BOUTONS --- */
+.soft-btn {
+    display: inline-block;
+    padding: 0.7rem 1.2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.soft-btn.purple {
+    background: var(--primary-color);
+    color: var(--background-color);
+}
+.soft-btn.purple:hover {
+    background: var(--secondary-color);
+    transform: scale(1.02);
+}
+
+.soft-btn.green {
+    background: var(--success-color);
+    color: #fff;
+}
+.soft-btn.green:hover {
+    background: #15803d;
+}
+
+.soft-btn.red {
+    background: var(--danger-color);
+    color: #fff;
+}
+.soft-btn.red:hover {
+    background: #be123c;
+}
+
+.soft-btn.outline {
+    background: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+.soft-btn.outline:hover {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+/* --- TEXTES --- */
+.merchant-name {
+    color: var(--light-text);
+    margin-bottom: 1rem;
+}
+
+.empty-text {
+    text-align: center;
+    color: var(--light-text);
+    font-style: italic;
+    margin-top: 2rem;
+}
+
+/* --- PAGINATION --- */
+.pagination-container {
+    text-align: center;
+    margin-top: 2rem;
+}
+</style>
 @endsection

@@ -45,7 +45,7 @@ class PriceComparisonController extends Controller
 
                 if (!$supply) {
                     $peut_fournir = false;
-                    $raisons[] = "❌ La fourniture « {$supplyName} » n’est pas disponible chez cette mercerie.";
+                    $raisons[] = "La fourniture « {$supplyName} » n’est pas disponible chez cette mercerie.";
                     continue;
                 }
 

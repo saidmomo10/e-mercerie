@@ -12,7 +12,7 @@ body {
   font-style: normal;
   color: #5d657b;
   overflow-x: hidden;
-  background: #f1f5f9;
+  /* background: #f1f5f9; */
 }
 
 * {
@@ -199,7 +199,7 @@ p {
 .more-btn-wrapper .dropdown-menu .dropdown-item a {
   width: 100%;
   border-radius: 4px;
-  color: #1A2142;
+  color: #4F0341;
 }
 .more-btn-wrapper .dropdown-menu .dropdown-item i {
   font-weight: 700;
@@ -288,7 +288,7 @@ h6,
 .h4,
 .h5,
 .h6 {
-  color: #1A2142;
+  color: #4F0341;
   margin: 0;
 }
 
@@ -524,7 +524,7 @@ h6,
 
 /* primary buttons */
 .primary-btn {
-  background: #365CF5;
+  background: linear-gradient(135deg, #4F0341, #9333ea);
   color: #fff;
 }
 .primary-btn:hover {
@@ -752,7 +752,7 @@ h6,
 
 /* dark buttons */
 .dark-btn {
-  background: #1A2142;
+  background: #4F0341;
   color: #fff;
 }
 .dark-btn:hover {
@@ -761,58 +761,58 @@ h6,
 
 .dark-btn-outline {
   background: transparent;
-  color: #1A2142;
-  border-color: #1A2142;
+  color: #4F0341;
+  border-color: #4F0341;
 }
 .dark-btn-outline:hover {
   color: #fff;
-  background: #1A2142;
+  background: #4F0341;
 }
 
 .dark-btn-light {
   background: rgba(26, 33, 66, 0.12);
-  color: #1A2142;
+  color: #4F0341;
 }
 .dark-btn-light:hover {
-  color: #1A2142;
+  color: #4F0341;
 }
 
 .dark-btn-group {
   background: transparent;
   border: 1px solid transparent;
-  color: #1A2142;
+  color: #4F0341;
 }
 .dark-btn-group.active, .dark-btn-group:hover {
   color: #fff;
-  background: #1A2142;
-  border-color: #1A2142 !important;
+  background: #4F0341;
+  border-color: #4F0341 !important;
 }
 
 /* light buttons */
 .light-btn {
   background: #DFE5EF;
-  color: #1A2142;
+  color: #4F0341;
 }
 .light-btn:hover {
-  color: #1A2142;
+  color: #4F0341;
 }
 
 .light-btn-outline {
   background: transparent;
-  color: #1A2142;
+  color: #4F0341;
   border-color: #DFE5EF;
 }
 .light-btn-outline:hover {
-  color: #1A2142;
+  color: #4F0341;
   background: #DFE5EF;
 }
 
 .light-btn-light {
   background: rgba(223, 229, 239, 0.5);
-  color: #1A2142;
+  color: #4F0341;
 }
 .light-btn-light:hover {
-  color: #1A2142;
+  color: #4F0341;
 }
 
 .light-btn-group {
@@ -963,7 +963,7 @@ h6,
   background: rgba(0, 193, 248, 0.1);
 }
 .status-btn.dark-btn {
-  color: #1A2142;
+  color: #4F0341;
   background: rgba(26, 33, 66, 0.1);
 }
 .status-btn.orange-btn {
@@ -1209,7 +1209,7 @@ h6,
   width: 100%;
 }
 .card-style-1 .card-meta .text p {
-  color: #1A2142;
+  color: #4F0341;
 }
 .card-style-1 .card-meta .text p a {
   color: inherit;
@@ -1317,7 +1317,7 @@ h6,
 }
 .card-style-3 .card-content a.read-more {
   font-weight: 500;
-  color: #1A2142;
+  color: #4F0341;
   margin-top: 20px;
 }
 .card-style-3 .card-content a.read-more:hover {
@@ -1369,7 +1369,7 @@ h6,
 }
 .card-style-4 .card-content a.read-more {
   font-weight: 500;
-  color: #1A2142;
+  color: #4F0341;
   margin-top: 20px;
 }
 .card-style-4 .card-content a.read-more:hover {
@@ -1505,7 +1505,7 @@ h6,
   border: none;
   background: none;
   display: flex;
-  color: #1A2142;
+  color: #4F0341;
   margin-right: 10px;
   font-size: 16px;
 }
@@ -1700,7 +1700,7 @@ h6,
 }
 .table th h6 {
   font-weight: 500;
-  color: #1A2142;
+  color: #4F0341;
   font-size: 14px;
 }
 .table td.min-width {
@@ -2077,7 +2077,7 @@ h6,
 .input-style-1 label {
   font-size: 14px;
   font-weight: 500;
-  color: #1A2142;
+  color: #4F0341;
   display: block;
   margin-bottom: 10px;
 }
@@ -2127,7 +2127,7 @@ h6,
 .input-style-2 label {
   font-size: 14px;
   font-weight: 500;
-  color: #1A2142;
+  color: #4F0341;
   display: block;
   margin-bottom: 10px;
 }
@@ -2173,7 +2173,7 @@ h6,
 .input-style-3 label {
   font-size: 14px;
   font-weight: 500;
-  color: #1A2142;
+  color: #4F0341;
   display: block;
   margin-bottom: 10px;
 }
@@ -2209,7 +2209,7 @@ h6,
 .select-style-1 label {
   font-size: 14px;
   font-weight: 500;
-  color: #1A2142;
+  color: #4F0341;
   display: block;
   margin-bottom: 10px;
 }
@@ -2418,7 +2418,7 @@ h6,
 .toggle-switch label {
   margin-top: 6px;
   font-size: 14px;
-  color: #1A2142;
+  color: #4F0341;
   cursor: pointer;
   user-select: none;
 }
@@ -2763,7 +2763,7 @@ h6,
   justify-content: center;
   align-items: center;
   position: relative;
-  color: #1A2142;
+  color: #4F0341;
 }
 .header .header-right button svg {
   fill: currentColor;
@@ -2901,7 +2901,7 @@ h6,
   font-weight: 700;
 }
 .header .header-right .profile-box .dropdown-menu li a:hover {
-  color: #1a2142;
+  color: #4F0341;
   background: #f3f3f3;
 }
 .header .header-right .profile-box .dropdown-menu li.divider {
@@ -2954,7 +2954,7 @@ h6,
   background: #f3f3f3;
 }
 .header .header-right .profile-box .dropdown-menu .author-info:hover a {
-  color: #1a2142;
+  color: #4F0341;
 }
 .header .header-right .profile-box .profile-info {
   margin: 0 5px;
@@ -3108,7 +3108,7 @@ h6,
   display: flex;
   align-items: center;
   gap: 18px;
-  color: #1A2142;
+  color: #4F0341;
 }
 
 .card-top-chanels .top-chanels-item {
@@ -3137,7 +3137,7 @@ h6,
   gap: 10px;
 }
 .featured-tab .nav button:hover, .featured-tab .nav button.active {
-  color: #1A2142;
+  color: #4F0341;
   background: rgba(223, 229, 239, 0.3);
 }
 .featured-tab .status-badge {
@@ -3558,7 +3558,7 @@ h6,
   border: 1px solid #efefef;
   border-radius: 4px;
   background: transparent;
-  color: #1A2142;
+  color: #4F0341;
   font-size: 20px;
   margin-right: 10px;
 }
@@ -3566,7 +3566,7 @@ h6,
 .icons-wrapper .icons li span,
 .icons-wrapper ul > div span,
 .icons-wrapper ul li span {
-  color: #1A2142;
+  color: #4F0341;
   user-select: all;
 }
 
@@ -3699,7 +3699,7 @@ h6,
   position: relative;
 }
 .sidebar-nav-wrapper .sidebar-nav ul .nav-item.nav-item-has-children > a {
-  color: #1A2142;
+  color: #4F0341;
 }
 .sidebar-nav-wrapper .sidebar-nav ul .nav-item.nav-item-has-children > a:not(.collapsed) .icon {
   color: #365CF5;
@@ -3752,7 +3752,7 @@ h6,
   align-items: center;
 }
 .sidebar-nav-wrapper .sidebar-nav ul .nav-item.nav-item-has-children ul li a.active, .sidebar-nav-wrapper .sidebar-nav ul .nav-item.nav-item-has-children ul li a:hover {
-  color: #1A2142;
+  color: #4F0341;
 }
 .sidebar-nav-wrapper .sidebar-nav ul .nav-item.nav-item-has-children ul li a i {
   font-size: 16px;
@@ -3777,7 +3777,7 @@ h6,
 .sidebar-nav-wrapper .sidebar-nav ul .nav-item a {
   display: flex;
   align-items: center;
-  color: #9AA4CA;
+  color: #4F0341;
   font-size: 14px;
   font-weight: 500;
   width: 100%;
@@ -3825,10 +3825,10 @@ h6,
   transition: all 0.3s ease-out 0s;
 }
 .sidebar-nav-wrapper .sidebar-nav ul .nav-item.active > a, .sidebar-nav-wrapper .sidebar-nav ul .nav-item.active > a.collapsed, .sidebar-nav-wrapper .sidebar-nav ul .nav-item:hover > a, .sidebar-nav-wrapper .sidebar-nav ul .nav-item:hover > a.collapsed {
-  color: #1A2142;
+  color: #4F0341;
 }
 .sidebar-nav-wrapper .sidebar-nav ul .nav-item.active > a .icon, .sidebar-nav-wrapper .sidebar-nav ul .nav-item.active > a.collapsed .icon, .sidebar-nav-wrapper .sidebar-nav ul .nav-item:hover > a .icon, .sidebar-nav-wrapper .sidebar-nav ul .nav-item:hover > a.collapsed .icon {
-  color: #365CF5;
+  color: #9333ea;
 }
 
 .sidebar-nav-wrapper.style-2 .sidebar-nav ul .nav-item.nav-item-has-children ul li a.active, .sidebar-nav-wrapper.style-2 .sidebar-nav ul .nav-item.nav-item-has-children ul li a:hover {
@@ -5778,7 +5778,7 @@ h6,
 }
 
 .dark-bg {
-  background-color: #1A2142;
+  background-color: #4F0341;
 }
 
 .light-bg {
@@ -5863,7 +5863,7 @@ h6,
 }
 
 .text-dark {
-  color: #1A2142 !important;
+  color: #4F0341 !important;
 }
 
 .text-light {

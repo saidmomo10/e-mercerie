@@ -41,9 +41,24 @@ class MerchantController extends Controller
                         ->orWhere('phone', 'like', "%{$query}%");
                 });
             })
-            ->get(['id', 'name', 'city', 'phone']);
+            ->with('merchantSupplies')
+            ->get();
 
-        return response()->json($merceries);
+        // Map response to include avatar_url and a short description
+        $payload = $merceries->map(function ($m) {
+            return [
+                'id' => $m->id,
+                'name' => $m->name,
+                'city' => $m->city,
+                'phone' => $m->phone,
+                'avatar_url' => $m->avatar_url ?? asset('images/defaults/mercerie-avatar.png'),
+                'description' => $m->address ? 
+                    (strlen($m->address) > 80 ? substr($m->address, 0, 77) . '...' : $m->address) : '',
+                'has_supplies' => $m->merchantSupplies->isNotEmpty(),
+            ];
+        });
+
+        return response()->json($payload);
     }
 
 

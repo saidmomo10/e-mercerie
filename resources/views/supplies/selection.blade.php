@@ -1,126 +1,159 @@
 @extends('layouts.app')
 
 @section('content')
+<div class="supplies-container">
+        <!-- Titre principal -->
+        <h1 class="page-title">Sélection des fournitures</h1>
 
-<h1 class="mb-4">Sélection des fournitures</h1>
-
-<div class="header-search d-none d-md-flex mb-3 position-relative">
-    <input type="text" id="search-live" class="form-control" placeholder="Rechercher une fourniture..." autocomplete="off" />
-
-    <!-- Loader (spinner) -->
-    <div id="search-loader" 
-         class="position-absolute top-50 end-0 translate-middle-y me-3 d-none">
-        <div class="spinner-border text-primary" style="width: 1.5rem; height: 1.5rem;" role="status">
-            <span class="visually-hidden">Chargement...</span>
+        <!-- Barre de recherche -->
+        <div class="search-wrapper">
+                <div class="search-bar">
+                        <i class="fa fa-search"></i>
+                        <input type="text" id="search-live" placeholder="Rechercher une fourniture..." autocomplete="off" />
+                        <div id="search-loader" class="loader hidden"></div>
+                </div>
         </div>
-    </div>
+
+        <!-- Formulaire -->
+        <form id="compare-form" class="supplies-form" action="{{ route('merceries.compare') }}" method="POST">
+                @csrf
+
+                <div class="supplies-list" id="supplies-list">
+                        @foreach($supplies as $supply)
+                                <div class="supply-card" data-id="{{ $supply->id }}">
+                                        <div class="supply-image">
+                                                <img src="{{ $supply->image_url ?? asset('images/default.png') }}" alt="{{ $supply->name }}">
+                                        </div>
+
+                                        <div class="supply-content">
+                                                <h3>{{ $supply->name }}</h3>
+                                                <p class="description">{{ $supply->description }}</p>
+
+                                                <div class="rating">
+                                                        <i class="star filled">★</i>
+                                                        <i class="star filled">★</i>
+                                                        <i class="star filled">★</i>
+                                                        <i class="star">★</i>
+                                                        <i class="star">★</i>
+                                                </div>
+
+                                                <div class="color-options">
+                                                        <span class="color-dot" style="background-color: #f87171"></span>
+                                                        <span class="color-dot" style="background-color: #60a5fa"></span>
+                                                        <span class="color-dot" style="background-color: #facc15"></span>
+                                                </div>
+
+                                                <div class="price-qty">
+                                                        <div class="price">
+                                                                <!-- <span class="amount">$09.00</span>
+                                                                <span class="label">Neuf seulement</span> -->
+                                                        </div>
+                                                        <div class="quantity-group">
+                                                                <label for="quantity_{{ $supply->id }}">Qté</label>
+                                                                <input type="number" min="0" name="items[{{ $supply->id }}][quantity]" id="quantity_{{ $supply->id }}" value="0" />
+                                                        </div>
+                                                </div>
+
+                                                <button type="button" class="add-btn">Ajouter au panier</button>
+                                        </div>
+                                </div>
+                        @endforeach
+                </div>
+
+                <button type="submit" class="soft-btn submit-btn">Comparer les merceries</button>
+        </form>
 </div>
 
-<form class="mt-4" action="{{ route('merceries.compare') }}" method="POST">
-    @csrf
-    <div class="row" id="supplies-list">
-        @foreach($supplies as $supply)
-            <div class="col-md-4 mb-3 supply-card" data-id="{{ $supply->id }}">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ $supply->name }}</h5>
-                        <p class="card-text">{{ $supply->description }}</p>
-                        <div class="mb-2">
-                            <label for="quantity_{{ $supply->id }}" class="form-label">Quantité</label>
-                            <input type="number" min="0" name="items[{{ $supply->id }}][quantity]" id="quantity_{{ $supply->id }}" class="form-control" value="0">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @endforeach
-    </div>
-    <button type="submit" class="btn btn-primary mt-3">Comparer les merceries</button>
-</form>
+<!-- 🎨 STYLE MODERNE -->
+<style>
+:root {
+        --primary-color: #4F0341;
+        --secondary-color: #9333ea;
+        --gradient: linear-gradient(135deg, #4F0341, #9333ea);
+        --white: #ffffff;
+        --gray: #6b7280;
+        --radius: 20px;
+        --shadow: 0 10px 10px rgba(255, 255, 255, 0.08);
+        --transition: all 0.3s ease;
+}
+
+body {
+    color: #111827;
+}
+
+/* --- TITRE --- */
+.page-title {
+    text-align: center;
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: var(--primary-color);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 2rem;
+    animation: fadeDown 0.8s ease;
+}
+
+/* --- BARRE DE RECHERCHE --- */
+.search-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.search-bar {
+    background: var(--white);
+    border-radius: 50px;
+    box-shadow: var(--shadow);
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1.5rem;
+    position: relative;
+    transition: var(--transition);
+}
+
+.search-bar i { color: #4F0341; font-size: 1rem; margin-right: 0.8rem; }
+.search-bar input { flex: 1; border: none; outline: none; font-size: 1rem; color: #111827; }
+.search-bar input::placeholder { color: #9ca3af; }
+.loader { border: 3px solid #f3f3f3; border-top: 3px solid #9333ea; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; position: absolute; right: 1.2rem; }
+.hidden { display: none; }
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes fadeDown { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+#supplies-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; animation: fadeInUp 0.5s ease; }
+.supply-card { background: #fff; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: var(--transition); text-align: center; }
+.supply-card:hover { transform: translateY(-8px); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1); }
+.supply-image { background: var(--gradient); display: flex; justify-content: center; padding: 1.5rem; }
+.supply-image img { width: 80%; transition: transform 0.4s ease; }
+.supply-card:hover img { transform: translateY(-5px) rotate(-3deg); }
+.supply-content { padding: 1.5rem; }
+.supply-content h3 { font-weight: 600; margin-bottom: 0.3rem; }
+.supply-content .description { color: var(--gray); font-size: 0.9rem; margin-bottom: 0.8rem; min-height: 40px; }
+.rating { color: #facc15; margin-bottom: 0.8rem; }
+.star { opacity: 0.4; transition: opacity 0.2s; }
+.star.filled { opacity: 1; }
+.color-options { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1rem; }
+.color-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 2px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s; }
+.color-dot:hover { transform: scale(1.2); }
+.price-qty { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.amount { font-size: 1.2rem; font-weight: 700; color: #4F0341; }
+.price .label { font-size: 0.8rem; color: var(--gray); }
+.quantity-group input { width: 70px; text-align: center; border-radius: 10px; border: 1px solid #e5e7eb; padding: 0.4rem; transition: var(--transition); }
+.quantity-group input:focus { border-color: #4F0341; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+.add-btn, .submit-btn { background: var(--primary-color); border: none; border-radius: 30px; color: #fff; font-weight: 600; font-size: 1rem; padding: 0.8rem 2rem; cursor: pointer; transition: var(--transition); width: 100%; }
+.add-btn:hover, .submit-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(217, 217, 250, 0.4); background: var(--secondary-color);}
+.submit-btn { display: block; width: auto; margin: 2rem auto 0; }
+.empty-message, .error-message { text-align: center; background: rgba(255, 255, 255, 0.85); padding: 1rem; border-radius: var(--radius); box-shadow: var(--shadow); animation: fadeInUp 0.4s ease; }
+</style>
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('search-live');
-    const suppliesList = document.getElementById('supplies-list');
-    const loader = document.getElementById('search-loader');
-    const quantities = {};
-
-    // Mémoriser les quantités initiales
-    document.querySelectorAll('#supplies-list input[type="number"]').forEach(input => {
-        const id = input.dataset.id || input.id.replace('quantity_', '');
-        quantities[id] = input.value;
-        input.addEventListener('input', function() {
-            quantities[this.dataset.id || this.id.replace('quantity_', '')] = this.value;
-        });
-    });
-
-    // Fonction pour recharger toutes les fournitures
-    function loadAllSupplies() {
-        loader.classList.remove('d-none');
-        fetch(`{{ route('api.supplies.search') }}`)
-            .then(response => response.json())
-            .then(supplies => renderSupplies(supplies))
-            .finally(() => loader.classList.add('d-none'));
-    }
-
-    // Fonction pour afficher les fournitures dans la liste
-    function renderSupplies(supplies) {
-        suppliesList.innerHTML = '';
-        if (supplies.length === 0) {
-            suppliesList.innerHTML = '<div class="col-12"><div class="alert alert-warning">Aucune fourniture trouvée.</div></div>';
-            return;
-        }
-        supplies.forEach(supply => {
-            const qty = quantities[supply.id] || 0;
-            suppliesList.innerHTML += `
-                <div class="col-md-4 mb-3 supply-card" data-id="${supply.id}">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title">${supply.name}</h5>
-                            <p class="card-text">${supply.description ?? ''}</p>
-                            <div class="mb-2">
-                                <label for="quantity_${supply.id}" class="form-label">Quantité</label>
-                                <input type="number" min="0" name="items[${supply.id}][quantity]" id="quantity_${supply.id}" class="form-control" value="${qty}" data-id="${supply.id}">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-
-        // Réattacher les événements sur les nouveaux inputs
-        document.querySelectorAll('#supplies-list input[type="number"]').forEach(input => {
-            input.addEventListener('input', function() {
-                quantities[this.dataset.id || this.id.replace('quantity_', '')] = this.value;
-            });
-        });
-    }
-
-    // Recherche dynamique
-    let timer = null;
-    searchInput.addEventListener('input', function() {
-        clearTimeout(timer);
-        timer = setTimeout(() => {
-            const query = searchInput.value.trim();
-
-            // ✅ Si le champ est vide, recharger la liste complète
-            if (query.length === 0) {
-                loadAllSupplies();
-                return;
-            }
-
-            loader.classList.remove('d-none');
-            fetch(`{{ route('api.supplies.search') }}?search=${encodeURIComponent(query)}`)
-                .then(response => response.json())
-                .then(supplies => renderSupplies(supplies))
-                .catch(error => {
-                    console.error('Erreur recherche:', error);
-                    suppliesList.innerHTML = '<div class="col-12"><div class="alert alert-danger">Erreur lors de la recherche.</div></div>';
-                })
-                .finally(() => loader.classList.add('d-none'));
-        }, 300);
-    });
-});
+  // expose the API url to the external script
+  window.SUPPLIES_SEARCH_URL = "{{ route('api.supplies.search') }}";
 </script>
+<script src="{{ asset('js/supplies-selection.js') }}?v={{ filemtime(public_path('js/supplies-selection.js')) }}"></script>
 @endpush
 @endsection
