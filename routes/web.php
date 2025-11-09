@@ -99,6 +99,17 @@ Route::middleware('auth')->group(function () {
     // Recherche AJAX (live)
     Route::get('/api/fournitures/search', [SupplyController::class, 'searchAjax'])->middleware('auth')->name('api.supplies.search');
 
+    // Admin routes for managing supplies
+    Route::prefix('admin')->middleware('auth', 'role:admin')->name('admin.')->group(function () {
+        Route::get('/supplies', [\App\Http\Controllers\Admin\AdminSupplyController::class, 'index'])->name('supplies.index');
+        Route::get('/supplies/create', [\App\Http\Controllers\Admin\AdminSupplyController::class, 'create'])->name('supplies.create');
+        Route::post('/supplies', [\App\Http\Controllers\Admin\AdminSupplyController::class, 'store'])->name('supplies.store');
+        Route::get('/supplies/{id}/edit', [\App\Http\Controllers\Admin\AdminSupplyController::class, 'edit'])->name('supplies.edit');
+        Route::put('/supplies/{id}', [\App\Http\Controllers\Admin\AdminSupplyController::class, 'update'])->name('supplies.update');
+        Route::delete('/supplies/{id}', [\App\Http\Controllers\Admin\AdminSupplyController::class, 'destroy'])->name('supplies.destroy');
+        Route::post('/push/send-test', [\App\Http\Controllers\Admin\AdminPushController::class, 'sendTest'])->name('push.send-test');
+    });
+
     // Routes pour les notifications
     Route::prefix('notifications')->group(function () {
         Route::get('/', [NotificationController::class, 'index'])->name('notifications.index');
@@ -107,6 +118,9 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
         Route::delete('/', [NotificationController::class, 'clearAll'])->name('notifications.clearAll');
     });
+
+        // Endpoint pour enregistrer une web-push subscription (auth requis)
+        Route::post('/push/subscribe', [\App\Http\Controllers\PushController::class, 'store'])->middleware('auth')->name('push.subscribe');
 
 
 });

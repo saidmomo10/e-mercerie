@@ -19,7 +19,7 @@ class OrderAccepted extends Notification implements ShouldQueue
 
     public function via($notifiable)
     {
-        return ['database', 'broadcast', 'mail'];
+        return ['database', 'broadcast', 'mail', \App\Notifications\Channels\WebPushChannel::class];
     }
 
     public function toMail($notifiable)
@@ -51,5 +51,16 @@ class OrderAccepted extends Notification implements ShouldQueue
             'message' => 'Votre commande #' . $this->order->id . ' a été acceptée',
             'url' => route('orders.show', $this->order->id),
         ]);
+    }
+
+    public function toWebPush($notifiable)
+    {
+        return [
+            'title' => '✅ Commande acceptée #' . $this->order->id,
+            'body' => 'Votre commande a été acceptée par la mercerie.',
+            'url' => route('orders.show', $this->order->id),
+            'icon' => null,
+            'data' => ['order_id' => $this->order->id],
+        ];
     }
 }

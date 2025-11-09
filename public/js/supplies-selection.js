@@ -61,7 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <input type="number" min="0" value="${qty}" id="quantity_${supply.id}">
               </div>
             </div>
-            <button class="add-btn">Ajouter au panier</button>
           </div>
         </div>`;
       list.insertAdjacentHTML('beforeend', card);
@@ -75,9 +74,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // build URL safely
     try {
       const base = new URL(SEARCH_URL, window.location.origin);
+      console.debug('[supplies-selection] fetching', base.toString());
       if (query) base.searchParams.set('search', query);
-      fetch(base.toString())
-        .then(r => r.json())
+      fetch(base.toString(), {
+        method: 'GET',
+        credentials: 'same-origin', // send cookies for auth-protected routes
+        headers: {
+          'Accept': 'application/json'
+        }
+      })
+        .then(r => {
+          if (!r.ok) {
+            console.warn('[supplies-selection] non-ok response', r.status, r);
+            throw new Error(`HTTP ${r.status}`);
+          }
+          return r.json();
+        })
         .then(renderSupplies)
         .catch(err => {
           console.error('Erreur fetching supplies:', err);

@@ -3,7 +3,9 @@
 @section('content')
 <div class="supplies-container">
         <!-- Titre principal -->
-        <h1 class="page-title">Sélection des fournitures</h1>
+        <div class="page-title">
+                <h1>Sélection des fournitures</h1>
+        </div>
 
         <!-- Barre de recherche -->
         <div class="search-wrapper">
@@ -19,7 +21,7 @@
                 @csrf
 
                 <div class="supplies-list" id="supplies-list">
-                        @foreach($supplies as $supply)
+                        @forelse($supplies as $supply)
                                 <div class="supply-card" data-id="{{ $supply->id }}">
                                         <div class="supply-image">
                                                 <img src="{{ $supply->image_url ?? asset('images/default.png') }}" alt="{{ $supply->name }}">
@@ -28,20 +30,6 @@
                                         <div class="supply-content">
                                                 <h3>{{ $supply->name }}</h3>
                                                 <p class="description">{{ $supply->description }}</p>
-
-                                                <div class="rating">
-                                                        <i class="star filled">★</i>
-                                                        <i class="star filled">★</i>
-                                                        <i class="star filled">★</i>
-                                                        <i class="star">★</i>
-                                                        <i class="star">★</i>
-                                                </div>
-
-                                                <div class="color-options">
-                                                        <span class="color-dot" style="background-color: #f87171"></span>
-                                                        <span class="color-dot" style="background-color: #60a5fa"></span>
-                                                        <span class="color-dot" style="background-color: #facc15"></span>
-                                                </div>
 
                                                 <div class="price-qty">
                                                         <div class="price">
@@ -53,11 +41,11 @@
                                                                 <input type="number" min="0" name="items[{{ $supply->id }}][quantity]" id="quantity_{{ $supply->id }}" value="0" />
                                                         </div>
                                                 </div>
-
-                                                <button type="button" class="add-btn">Ajouter au panier</button>
                                         </div>
                                 </div>
-                        @endforeach
+                        @empty
+                                <p class="empty-message">Aucune fourniture disponible pour le moment.</p>
+                        @endforelse
                 </div>
 
                 <button type="submit" class="soft-btn submit-btn">Comparer les merceries</button>
@@ -66,32 +54,6 @@
 
 <!-- 🎨 STYLE MODERNE -->
 <style>
-:root {
-        --primary-color: #4F0341;
-        --secondary-color: #9333ea;
-        --gradient: linear-gradient(135deg, #4F0341, #9333ea);
-        --white: #ffffff;
-        --gray: #6b7280;
-        --radius: 20px;
-        --shadow: 0 10px 10px rgba(255, 255, 255, 0.08);
-        --transition: all 0.3s ease;
-}
-
-body {
-    color: #111827;
-}
-
-/* --- TITRE --- */
-.page-title {
-    text-align: center;
-    font-size: 2.2rem;
-    font-weight: 700;
-    background: var(--primary-color);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 2rem;
-    animation: fadeDown 0.8s ease;
-}
 
 /* --- BARRE DE RECHERCHE --- */
 .search-wrapper {

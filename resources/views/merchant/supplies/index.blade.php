@@ -1,23 +1,28 @@
 @extends('layouts.app')
 
 @section('content')
+<div class="page-title">
+  <h1>Mes Fournitures</h1>
+</div>
+
 <div class="tables-wrapper">
   <div class="row">
     <div class="col-lg-12">
-      <div class="card-style mb-30">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h4 class="mb-0">Mes Fournitures</h4>
-          <a href="{{ route('merchant.supplies.create') }}" class="main-btn primary-btn btn-hover">
+      <div class="card-style mb-30 shadow-sm rounded-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4 class="fw-bold text-dark">Liste de mes fournitures</h4>
+          <a href="{{ route('merchant.supplies.create') }}" class="soft-btn primary-btn">
             <i class="lni lni-plus"></i> Ajouter une fourniture
           </a>
         </div>
 
         <div class="table-wrapper table-responsive">
-          <table class="table striped-table">
+          <table class="table striped-table align-middle">
             <thead>
               <tr>
                 <th><h6>Fourniture</h6></th>
-                <th><h6>Prix</h6></th>
+                <th><h6>Prix (FCFA)</h6></th>
                 <th><h6>Quantité</h6></th>
                 <th><h6>Actions</h6></th>
               </tr>
@@ -25,25 +30,26 @@
             <tbody>
               @forelse($merchantSupplies as $supply)
                 <tr>
-                  <td><p>{{ $supply->supply->name }}</p></td>
+                  <td><p class="fw-medium">{{ $supply->supply->name }}</p></td>
                   <td><p>{{ number_format($supply->price, 0, ',', ' ') }}</p></td>
                   <td><p>{{ $supply->stock_quantity }}</p></td>
-                  <td class="d-flex gap-2">
-                    <!-- Bouton modifier -->
+                  <td class="d-flex gap-3">
+                    <!-- Modifier -->
                     <a href="{{ route('merchant.supplies.edit', $supply->id) }}" 
-                       class="text-secondary" title="Modifier">
+                       class="edit-icone" title="Modifier">
                       <i class="fa-solid fa-pencil"></i>
                     </a>
 
-                    <!-- Bouton supprimer -->
-                    <form action="{{ route('merchant.supplies.destroy', $supply->id) }}" method="POST" class="delete-form d-inline">
+                    <!-- Supprimer -->
+                    <form action="{{ route('merchant.supplies.destroy', $supply->id) }}" 
+                          method="POST" class="delete-form d-inline">
                       @csrf
                       @method('DELETE')
-                      <div class="actions">
-                        <button type="button" class="text-danger btn-delete" title="Supprimer" style="border:none; background:none; padding:0;">
-                          <i class="fa-solid fa-trash"></i>
-                        </button>
-                      </div>  
+                      <button type="button" 
+                              class="text-danger btn-delete border-0 bg-transparent p-0" 
+                              title="Supprimer">
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
                     </form>
                   </td>
                 </tr>
@@ -55,12 +61,84 @@
             </tbody>
           </table>
         </div>
+
       </div>
     </div>
   </div>
 </div>
 
-{{-- SweetAlert2 Confirmation pour suppression --}}
+<!-- === STYLE PERSONNALISÉ === -->
+<style>
+:root {
+  --primary-color: #4F0341;
+  --secondary-color: #9333ea;
+  --gradient: linear-gradient(135deg, #4F0341, #9333ea);
+  --white: #fff;
+  --gray: #6b7280;
+  --radius: 20px;
+  --shadow: 0 8px 20px rgba(0,0,0,0.08);
+  --transition: all 0.3s ease;
+}
+
+/* === TITRE AVEC BACKGROUND === */
+
+/* === TABLEAU === */
+.card-style {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+}
+
+.edit-icone{
+  color: var(--primary-color);
+  font-size: 1.1rem;
+  transition: var(--transition);
+}
+
+.table thead {
+  background: rgba(79, 3, 65, 0.05);
+}
+.table th h6 {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+.table td p {
+  margin: 0;
+  color: #111827;
+}
+
+/* === BOUTONS === */
+.soft-btn {
+  border: none;
+  border-radius: 30px;
+  font-weight: 600;
+  padding: 0.8rem 2rem;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+}
+
+.primary-btn {
+  background: var(--gradient);
+  color: white;
+}
+.primary-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(147,51,234,0.3);
+}
+
+/* === ANIMATIONS === */
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+{{-- SweetAlert2 Confirmation --}}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.btn-delete').forEach(button => {
@@ -86,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-{{-- Modal de complétion de profil --}}
+{{-- Modal de complétion du profil --}}
 @if(session('showProfileModal'))
 <div class="modal fade" id="profileCompletionModal" tabindex="-1" aria-labelledby="profileCompletionModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -125,13 +203,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    var modalElement = document.getElementById('profileCompletionModal');
-    if(modalElement){
-        var profileModal = new bootstrap.Modal(modalElement);
-        profileModal.show();
-    }
+  var modalElement = document.getElementById('profileCompletionModal');
+  if (modalElement) {
+    var profileModal = new bootstrap.Modal(modalElement);
+    profileModal.show();
+  }
 });
 </script>
 @endif
-
 @endsection

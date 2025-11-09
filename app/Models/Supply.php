@@ -10,7 +10,12 @@ class Supply extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'category', 'unit', 'description'];
+    protected $fillable = ['name', 'category', 'unit', 'description', 'image_url'];
+
+    /**
+     * Automatically append accessor attributes when model is serialized to array/json.
+     */
+    protected $appends = ['image_url'];
 
     public function merchantSupplies()
     {
@@ -20,6 +25,22 @@ class Supply extends Model
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Ensure image_url returns a full URL when accessed (fallback to default image).
+     */
+    public function getImageUrlAttribute($value)
+    {
+        if ($value) {
+            // If the stored value is already an absolute URL, return it; otherwise use asset()
+            if (preg_match('#^https?://#i', $value)) {
+                return $value;
+            }
+            return asset(ltrim($value, '/'));
+        }
+
+        return asset('images/default.png');
     }
 }
 

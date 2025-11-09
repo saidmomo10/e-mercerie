@@ -15,7 +15,14 @@ class SupplyController extends Controller
             $q->where('name', 'like', "%{$query}%")
               ->orWhere('description', 'like', "%{$query}%");
         })->get();
-        return response()->json($supplies);
+        // Explicitly include image_url (using accessor) to ensure the JS receives it
+        $payload = $supplies->map(function ($s) {
+            $a = $s->toArray();
+            $a['image_url'] = $s->image_url;
+            return $a;
+        });
+
+        return response()->json($payload);
     }
     // Étape 1 : Liste des fournitures
     public function index()

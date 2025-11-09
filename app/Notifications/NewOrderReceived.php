@@ -18,7 +18,7 @@ class NewOrderReceived extends Notification implements ShouldQueue
 
     public function via($notifiable)
     {
-        return ['database', 'broadcast', 'mail'];
+        return ['database', 'broadcast', 'mail', \App\Notifications\Channels\WebPushChannel::class];
     }
 
     public function toMail($notifiable)
@@ -54,5 +54,19 @@ class NewOrderReceived extends Notification implements ShouldQueue
             'url' => route('orders.show', $this->order->id),
             'couturier_avatar' => $this->order->couturier->getAvatarUrlAttribute() ?? null,
         ]);
+    }
+
+    /**
+     * Payload for WebPush channel
+     */
+    public function toWebPush($notifiable)
+    {
+        return [
+            'title' => '🛒 Nouvelle commande #' . $this->order->id,
+            'body' => 'Commande reçue de ' . $this->order->couturier->name,
+            'url' => route('orders.show', $this->order->id),
+            'icon' => null,
+            'data' => ['order_id' => $this->order->id],
+        ];
     }
 }

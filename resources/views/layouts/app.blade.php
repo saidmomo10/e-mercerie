@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
   <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="webpush-public-key" content="{{ env('WEBPUSH_VAPID_PUBLIC') }}">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="shortcut icon" href="assets/images/favicon.svg" type="image/x-icon" />
@@ -17,6 +18,7 @@
     <link rel="stylesheet" href="assets/css/main.css" /> -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
     <link rel="stylesheet" href="{{ asset('css/lineicons.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
@@ -72,6 +74,16 @@
                 </a>
             </li> -->
         @else
+            @if(auth()->user() && auth()->user()->role === 'admin')
+              <li class="nav-item">
+                  <a href="{{ route('admin.supplies.index') }}">
+                  <span class="icon">
+                      <i class="fa-solid fa-shield-halved"></i>
+                  </span>
+                  <span class="text">Admin - Fournitures</span>
+                  </a>
+              </li>
+            @endif
             @if(auth()->user()->isCouturier())
               <li class="nav-item">
                   <a href="{{ route('merceries.index') }}">
@@ -334,6 +346,16 @@
                   </ul>
                 </div>
                 <!-- notification end -->
+                <!-- cart start -->
+                @if(auth()->user()->isCouturier())
+                <div class="cart-box ms-3">
+                  <button id="cart-button" class="btn btn-link position-relative" type="button" aria-label="Panier">
+                    <i class="fa fa-shopping-cart fa-lg"></i>
+                    <span id="cart-count" class="badge bg-danger position-absolute" style="top: -6px; right: -6px; display:none;">0</span>
+                  </button>
+                </div>
+                @endif
+                <!-- cart end -->
                 <!-- message start -->
                 <!-- <div class="header-message-box ml-15">
                   <button class="dropdown-toggle" type="button" id="message" data-bs-toggle="dropdown"
@@ -458,6 +480,29 @@
     <div id="notifications-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1055;">
         <!-- Les notifications toast apparaîtront ici -->
     </div>
+  <!-- Container for Web Push activation button -->
+  <div id="push-permission" class="position-fixed bottom-0 start-0 m-3" style="z-index:1055"></div>
+      <!-- Cart modal -->
+      <div class="modal fade" id="cartModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-end">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Votre panier</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div id="cart-items"></div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between align-items-center">
+              <div>Total: <strong id="cart-total">0</strong></div>
+              <div>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Continuer mes achats</button>
+                <button type="button" id="preview-cart-btn" class="btn btn-primary">Prévisualiser la commande</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <!-- ========== header end ========== -->
         <!-- @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
@@ -525,6 +570,7 @@
 
      <!-- Scripts globaux -->
     <script src="{{ asset('js/app.js') }}"></script>
+  <script src="{{ asset('js/push.js') }}?v={{ filemtime(public_path('js/push.js')) }}"></script>
 
     @if(session('success'))
       <script>
@@ -710,6 +756,9 @@
 
     <!-- Scripts spécifiques -->
     @stack('scripts')
+
+  <!-- Cart script -->
+  <script src="{{ asset('js/cart.js') }}?v={{ filemtime(public_path('js/cart.js')) }}"></script>
 
   </body>
 </html>

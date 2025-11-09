@@ -66,30 +66,31 @@
 </div>
 
 <style>
-/* --- PALETTE --- */
 :root {
     --primary-color: #4F0341;
     --secondary-color: #9333ea;
-    --background-color: #fff;
+    --accent-color: #f3e8ff;
+    --error-color: #e11d48;
+    --background-color: #ffffff;
     --text-color: #2d2d2d;
-    --light-text: #777;
-    --border-color: #f0f0f0;
+    --light-text: #666;
+    --border-color: #e5e7eb;
 }
 
-/* --- STRUCTURE GÉNÉRALE --- */
+/* --- STRUCTURE --- */
 .compare-container {
     max-width: 1100px;
-    margin: 2rem auto;
-    padding: 1rem;
+    margin: 2.5rem auto;
+    padding: 1rem 1.5rem;
     color: var(--text-color);
 }
 
 .page-title {
     text-align: center;
     font-size: 2rem;
-    font-weight: 700;
+    font-weight: 800;
     color: var(--primary-color);
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
 }
 
 /* --- SECTIONS --- */
@@ -98,48 +99,47 @@
 }
 
 .section-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
     color: var(--secondary-color);
+    border-left: 4px solid var(--secondary-color);
+    padding-left: 0.6rem;
 }
 
 .section-title.unavailable {
-    color: #e11d48;
+    color: var(--error-color);
+    border-left-color: var(--error-color);
 }
 
 /* --- GRILLE --- */
 .cards-grid {
     display: grid;
     gap: 1.5rem;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
 }
 
 /* --- CARDS --- */
 .mercerie-card {
     background: var(--background-color);
-    border-radius: 16px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    border-radius: 18px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
     padding: 1.5rem;
     transition: all 0.3s ease;
-    border: 1px solid transparent;
+    border: 1px solid var(--border-color);
+    position: relative;
 }
 
-.mercerie-card:hover {
+.mercerie-card.available:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 22px rgba(147, 51, 234, 0.15);
+    border-color: var(--secondary-color);
+    box-shadow: 0 8px 22px rgba(147, 51, 234, 0.2);
 }
 
-/* Disponible */
-/* .mercerie-card.available {
-    border-left: 4px solid var(--secondary-color);
-} */
-
-/* Non disponible */
-/* .mercerie-card.unavailable {
-    border-left: 4px solid #e11d48;
+.mercerie-card.unavailable {
+    border-left: 5px solid var(--error-color);
     background: #fff7f8;
-} */
+}
 
 /* --- HEADER --- */
 .mercerie-header {
@@ -150,7 +150,7 @@
 }
 
 .mercerie-header h3 {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 600;
     color: var(--primary-color);
 }
@@ -162,11 +162,12 @@
 }
 
 .status-tag {
-    background: #ffe6e9;
-    color: #b91c1c;
-    padding: 0.3rem 0.7rem;
+    background: #ffe6ea;
+    color: var(--error-color);
+    padding: 0.35rem 0.8rem;
     border-radius: 12px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 600;
 }
 
 /* --- LISTE DES DÉTAILS --- */
@@ -180,9 +181,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.6rem 0;
-    border-bottom: 1px solid var(--border-color);
-    font-size: 0.95rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px dashed var(--border-color);
+    font-size: 0.93rem;
 }
 
 .details-list li:last-child {
@@ -192,13 +193,13 @@
 .details-list .supply {
     font-weight: 500;
     flex: 1;
-    color: var(--text-color);
 }
 
 .details-list .quantity {
     color: var(--light-text);
     flex: 1;
     text-align: center;
+    font-style: italic;
 }
 
 .details-list .subtotal {
@@ -208,28 +209,29 @@
     text-align: right;
 }
 
-/* --- BOUTON --- */
+/* --- BOUTONS --- */
 .soft-btn {
     display: inline-block;
-    padding: 0.75rem 1.5rem;
+    width: 100%;
+    text-align: center;
+    padding: 0.8rem 1.4rem;
     border-radius: 12px;
     font-weight: 600;
     border: none;
     cursor: pointer;
     transition: 0.3s;
     font-size: 0.95rem;
-    width: 100%;
-    text-align: center;
 }
 
 .soft-btn.purple {
     background: var(--primary-color);
-    color: var(--background-color);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(79, 3, 65, 0.2);
 }
 
 .soft-btn.purple:hover {
     background: var(--secondary-color);
-    transform: scale(1.02);
+    transform: translateY(-2px);
 }
 
 /* --- TEXTES --- */

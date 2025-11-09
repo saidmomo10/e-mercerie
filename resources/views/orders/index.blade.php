@@ -2,7 +2,9 @@
 
 @section('content')
 <div class="orders-container">
-    <h1 class="page-title">Mes commandes</h1>
+    <div class="page-title">
+        <h1>Mes commandes</h1>
+    </div>
 
     <!-- 🔍 Barre de recherche -->
     <form method="GET" action="{{ route('orders.index') }}" id="filterForm" class="filter-bar">

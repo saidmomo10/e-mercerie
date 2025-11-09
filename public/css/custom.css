@@ -1,0 +1,28 @@
+:root {
+  --primary-color: #4F0341;
+  --secondary-color: #9333ea;
+  --gradient: linear-gradient(135deg, #4F0341, #9333ea);
+  --white: #fff;
+  --gray: #6b7280;
+  --radius: 20px;
+  --shadow: 0 8px 20px rgba(0,0,0,0.08);
+  --transition: all 0.3s ease;
+}
+
+.page-title {
+      background-color: var(--primary-color);
+      padding: 1.5rem 2rem;
+      border-radius: 10px;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: var(--shadow);
+  }
+
+  .page-title h1 {
+    color: var(--white);
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: 0.5px;
+  }

@@ -2,7 +2,9 @@
 
 @section('content')
 <div class="order-details-container">
-    <h1 class="page-title">Détails de la commande #{{ $order->id }}</h1>
+    <div class="page-title">
+        <h1>Détails de la commande #{{ $order->id }}</h1>
+    </div>
 
     <div class="order-card">
 
@@ -112,14 +114,6 @@
     margin: 2rem auto;
     padding: 1rem;
     color: var(--text-color);
-}
-
-.page-title {
-    text-align: center;
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 2rem;
 }
 
 /* --- CARD PRINCIPALE --- */

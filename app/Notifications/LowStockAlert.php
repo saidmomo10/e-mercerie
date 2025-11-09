@@ -18,7 +18,7 @@ class LowStockAlert extends Notification implements ShouldQueue
 
     public function via($notifiable)
     {
-        return ['database', 'broadcast', 'mail'];
+        return ['database', 'broadcast', 'mail', \App\Notifications\Channels\WebPushChannel::class];
     }
 
     public function toMail($notifiable)
@@ -52,5 +52,16 @@ class LowStockAlert extends Notification implements ShouldQueue
             'message' => 'Stock faible pour ' . $this->merchantSupply->supply->name,
             'url' => route('merchant.supplies.index'),
         ]);
+    }
+
+    public function toWebPush($notifiable)
+    {
+        return [
+            'title' => '⚠️ Stock faible: ' . $this->merchantSupply->supply->name,
+            'body' => 'Stock actuel : ' . $this->merchantSupply->stock_quantity,
+            'url' => route('merchant.supplies.index'),
+            'icon' => null,
+            'data' => ['supply_id' => $this->merchantSupply->supply_id],
+        ];
     }
 }

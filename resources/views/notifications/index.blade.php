@@ -1,113 +1,201 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="notification-wrapper">
-        <div class="container-fluid">
-            <!-- ========== title-wrapper start ========== -->
-            <div class="title-wrapper pt-30 mb-4">
-                <div class="row align-items-center">
-                    <div class="col-md-6">
-                        <div class="title">
-                            <h2>Notifications</h2>
-                        </div>
-                    </div>
-                    <div class="col-md-6 text-end">
-                        <!-- <form action="{{ route('notifications.markAllAsRead') }}" method="POST" class="d-inline">
-                                @csrf
-                                <button type="submit" class="btn btn-outline-success me-2">
-                                        <i class="fa-solid fa-check-double"></i> Tout marquer comme lu
-                                </button>
-                        </form> -->
-                        <form action="{{ route('notifications.clearAll') }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                            <button type="button" id="clear-all-btn" class="btn btn-outline-danger">
-                                <i class="fa-solid fa-trash"></i> Tout supprimer
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
+<style>
+  /* === Styles Modernisés === */
+  
 
-            <div class="card-style">
-                @forelse($notifications as $notification)
-                    <div class="single-notification {{ $notification->read_at ? 'readed' : '' }}">
-                        <!-- <div class="checkbox">
-                            <div class="form-check checkbox-style mb-20">
-                                <input class="form-check-input" type="checkbox" value="" id="notif-{{ $notification->id }}" />
-                            </div>
-                        </div> -->
-                        <div class="notification d-flex align-items-center">
-                            <!-- <div class="image {{ $notification->read_at ? 'info-bg' : 'warning-bg' }} me-3">
-                                <span>{{ strtoupper(substr($notification->data['message'] ?? 'N', 0, 1)) }}</span>
-                            </div> -->
-                            <div class="content flex-grow-1">
-                                <a href="{{ $notification->data['url'] ?? '#' }}" class="text-decoration-none read text-dark">
-                                    <h6>{{ $notification->data['message'] ?? 'Notification' }}</h6>
-                                    @if(isset($notification->data['subtitle']))
-                                        <p class="text-sm text-gray">{{ $notification->data['subtitle'] }}</p>
-                                    @endif
-                                </a>
-                                <small class="text-muted">{{ $notification->created_at->format('d/m/Y H:i') }}
-                                    @if(!$notification->read_at)
-                                        <span class="badge bg-primary ms-2">Nouveau</span>
-                                    @endif
-                                </small>
-                            </div>
+  .btn-custom {
+      background-color: #6a0b52;
+      color: #fff;
+      border: none;
+      transition: all 0.3s ease;
+  }
 
-                            <div class="action ms-3 d-flex align-items-center">
-                                @if(!$notification->read_at)
-                                    <form action="{{ route('notifications.markAsRead', $notification->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-outline-primary" title="Marquer comme lu"><i class="fa-solid fa-check"></i></button>
-                                    </form>
-                                @endif
-                                @if(isset($notification->data['url']))
-                                    <a href="{{ $notification->data['url'] . '?notif=' . $notification->id }}" class="btn btn-sm read mt-2 d-block" title="Voir"><i class="fa-solid fa-eye"></i></a>
-                                @endif
-                                <form action="{{ route('notifications.destroy', $notification->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn" title="Supprimer"><i class="fa-solid fa-trash-can"></i></button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="alert alert-info text-center">
-                        <i class="fa-solid fa-bell-slash fa-3x mb-3"></i>
-                        <h4>Aucune notification</h4>
-                        <p class="mb-0">Vous n'avez aucune notification pour le moment.</p>
-                    </div>
-                @endforelse
-            </div>
+  .btn-custom:hover {
+      background-color: #8b166a;
+      transform: translateY(-1px);
+  }
 
-            <div class="d-flex justify-content-center mt-4">
-                {{ $notifications->links() }}
-            </div>
+  .btn-outline-danger {
+      border: 1px solid #dc3545;
+      color: #dc3545;
+      transition: all 0.3s ease;
+  }
 
+  .btn-outline-danger:hover {
+      background-color: #dc3545;
+      color: #fff;
+  }
+
+  .card-style {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      padding: 1.5rem;
+  }
+
+  .single-notification {
+      border-bottom: 1px solid #eee;
+      padding: 1rem 0;
+      transition: all 0.2s ease-in-out;
+  }
+
+  .single-notification:last-child {
+      border-bottom: none;
+  }
+
+  .single-notification:hover {
+      background: #fafafa;
+      border-radius: 10px;
+  }
+
+  .single-notification.readed {
+      opacity: 0.8;
+  }
+
+  .notification h6 {
+      margin-bottom: 0.25rem;
+      font-weight: 600;
+      color: #333;
+  }
+
+  .notification .text-sm {
+      font-size: 0.9rem;
+      color: #777;
+  }
+
+  .notification small {
+      font-size: 0.85rem;
+  }
+
+  .notification .badge.bg-primary {
+      background-color: #6a0b52 !important;
+  }
+
+  .action button,
+  .action a {
+      border-radius: 8px;
+      transition: all 0.2s ease;
+  }
+
+  .action a.read {
+      background-color: #f8f5fa;
+      color: #6a0b52;
+      border: 1px solid #e5d1e9;
+      padding: 6px 8px;
+  }
+
+  .action a.read:hover {
+      background-color: #6a0b52;
+      color: #fff;
+  }
+
+  .pagination {
+      margin-top: 1.5rem;
+  }
+
+  .alert-info {
+      background-color: #f9f5fb;
+      color: #4F0341;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+</style>
+
+<div class="container-fluid">
+  <!-- === Titre principal === -->
+  <div class="page-title">
+    <h1><i class="fa-solid fa-bell me-2"></i> Mes Notifications</h2>
+  </div>
+
+    <form action="{{ route('notifications.clearAll') }}" method="POST" class="d-inline">
+        @csrf
+        @method('DELETE')
+        <button type="button" id="clear-all-btn" class="btn btn-outline-danger mb-4">
+        <i class="fa-solid fa-trash"></i> Tout supprimer
+        </button>
+    </form>
+
+  <!-- === Liste des notifications === -->
+  <div class="card-style">
+    @forelse($notifications as $notification)
+      <div class="single-notification {{ $notification->read_at ? 'readed' : '' }}">
+        <div class="notification d-flex align-items-start justify-content-between">
+          <div class="content flex-grow-1">
+            <a href="{{ $notification->data['url'] ?? '#' }}" class="text-decoration-none text-dark read">
+              <h6>{{ $notification->data['message'] ?? 'Notification' }}</h6>
+              @if(isset($notification->data['subtitle']))
+                <p class="text-sm">{{ $notification->data['subtitle'] }}</p>
+              @endif
+            </a>
+            <small class="text-muted">
+              {{ $notification->created_at->format('d/m/Y H:i') }}
+              @if(!$notification->read_at)
+                <span class="badge bg-primary ms-2">Nouveau</span>
+              @endif
+            </small>
+          </div>
+          <div class="action ms-3 d-flex gap-2">
+            @if(!$notification->read_at)
+              <form action="{{ route('notifications.markAsRead', $notification->id) }}" method="POST" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-outline-primary" title="Marquer comme lu">
+                  <i class="fa-solid fa-check"></i>
+                </button>
+              </form>
+            @endif
+            @if(isset($notification->data['url']))
+              <a href="{{ $notification->data['url'] . '?notif=' . $notification->id }}" 
+                 class="btn btn-sm read" title="Voir">
+                <i class="fa-solid fa-eye"></i>
+              </a>
+            @endif
+            <form action="{{ route('notifications.destroy', $notification->id) }}" method="POST" class="d-inline">
+              @csrf
+              @method('DELETE')
+              <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </form>
+          </div>
         </div>
-        <!-- end container -->
-    </div>
+      </div>
+    @empty
+      <div class="alert alert-info text-center py-4">
+        <i class="fa-solid fa-bell-slash fa-3x mb-3"></i>
+        <h4>Aucune notification</h4>
+        <p class="mb-0">Vous n'avez aucune notification pour le moment.</p>
+      </div>
+    @endforelse
+  </div>
+
+  <!-- Pagination -->
+  <div class="d-flex justify-content-center mt-4">
+    {{ $notifications->links() }}
+  </div>
+</div>
 @endsection
 
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // SweetAlert confirmation for 'Tout supprimer'
+    // SweetAlert2 - Suppression globale
     const clearAllBtn = document.getElementById('clear-all-btn');
     if (clearAllBtn) {
         clearAllBtn.addEventListener('click', function(e) {
             e.preventDefault();
             Swal.fire({
                 title: 'Êtes-vous sûr ?',
-                text: 'Cette action supprimera toutes vos notifications !',
+                text: 'Cette action supprimera toutes vos notifications.',
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
+                confirmButtonColor: '#4F0341',
+                cancelButtonColor: '#6c757d',
                 confirmButtonText: 'Oui, supprimer',
-                cancelButtonText: 'Annuler'
+                cancelButtonText: 'Annuler',
+                customClass: { popup: 'rounded-4 shadow-lg' }
             }).then((result) => {
                 if (result.isConfirmed) {
                     clearAllBtn.closest('form').submit();
@@ -115,8 +203,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    // Marquer comme lu via clic
     const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    document.querySelectorAll('.btn.read.d-block').forEach(btn => {
+    document.querySelectorAll('.btn.read').forEach(btn => {
         btn.addEventListener('click', function(e) {
             const href = this.getAttribute('href') || '#';
             const url = new URL(href, window.location.origin);
@@ -128,22 +218,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': csrf
-                    },
-                    body: JSON.stringify({})
-                }).then(() => {
-                    // Remove the "Nouveau" badge from the notification card
-                    const notifCard = document.getElementById(`notif-${notifId}`);
-                    if (notifCard) {
-                        const parent = notifCard.closest('.single-notification');
-                        if (parent) {
-                            const nouveauBadge = parent.querySelector('.badge.bg-primary');
-                            if (nouveauBadge) nouveauBadge.remove();
-                        }
                     }
-                    window.location.href = href;
-                }).catch(() => {
-                    window.location.href = href;
-                });
+                }).then(() => window.location.href = href)
+                .catch(() => window.location.href = href);
             }
         });
     });
