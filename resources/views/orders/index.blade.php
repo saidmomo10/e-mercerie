@@ -334,5 +334,56 @@ document.getElementById('resetBtn').addEventListener('click', function() {
     text-align: center;
     margin-top: 2rem;
 }
+
+/* --- RESPONSIVE FIX --- */
+@media (max-width: 600px) {
+    .cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.4rem;
+    }
+
+    .order-meta {
+        text-align: left;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+    }
+
+    .order-meta .date,
+    .order-meta .price {
+        font-size: 0.9rem;
+        word-wrap: break-word;
+    }
+
+    .order-header h3 {
+        font-size: 1rem;
+        word-break: break-word;
+    }
+
+    .order-card {
+        padding: 1.2rem;
+    }
+
+    .filter-group {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-actions {
+        justify-content: flex-start;
+    }
+
+    .soft-btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
 </style>
 @endsection

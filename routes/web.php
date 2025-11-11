@@ -28,6 +28,17 @@ Route::post('/register', [AuthController::class, 'registerWeb'])->name('register
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form');
 Route::post('/login', [AuthController::class, 'loginWeb'])->name('login.submit');
 
+// Password reset (forgot password)
+Route::get('/password/reset', [\App\Http\Controllers\AuthController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('/password/email', [\App\Http\Controllers\AuthController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('/password/reset/{token}', [\App\Http\Controllers\AuthController::class, 'showResetForm'])->name('password.reset');
+Route::post('/password/reset', [\App\Http\Controllers\AuthController::class, 'reset'])->name('password.update');
+
+// Email verification routes (Laravel's built-in style)
+Route::get('/email/verify', [\App\Http\Controllers\AuthController::class, 'verificationNotice'])->name('verification.notice');
+Route::get('/email/verify/{id}/{hash}', [\App\Http\Controllers\AuthController::class, 'verify'])->middleware('signed')->name('verification.verify');
+Route::post('/email/resend', [\App\Http\Controllers\AuthController::class, 'resend'])->middleware('throttle:6,1')->name('verification.resend');
+
 // Liste des fournitures (vue publique)
 Route::get('/', [SupplyController::class, 'index'])->name('supplies.index');
 

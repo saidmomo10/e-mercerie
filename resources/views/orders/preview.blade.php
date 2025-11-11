@@ -1,85 +1,210 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mt-4">
-    <h2>Prévisualisation de la commande - {{ $mercerie->name }}</h2>
+<style>
+    /* ===== Titre principal ===== */
+    .page-title {
+        background-color: #4F0341;
+        color: white;
+        padding: 2rem 1rem;
+        text-align: center;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(79, 3, 65, 0.3);
+        margin-bottom: 2rem;
+    }
 
-    <table class="table table-bordered mt-3">
-        <thead>
-            <tr>
-                <th>Fourniture</th>
-                <th>Quantité</th>
-                <th>Prix Unitaire</th>
-                <th>Sous-total</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($details as $item)
-            <tr>
-                <td>{{ $item['supply'] }}</td>
-                <td>{{ $item['quantity'] }}</td>
-                <td>{{ number_format($item['price'], 0, ',', ' ') }} FCFA</td>
-                <td>{{ number_format($item['subtotal'], 0, ',', ' ') }} FCFA</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+    .page-title h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        word-break: break-word;
+    }
 
-    <h4 class="text-end mt-3">
-        <strong>Total : {{ number_format($total, 0, ',', ' ') }} FCFA</strong>
-    </h4>
+    /* ===== Carte principale ===== */
+    .card-custom {
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
 
-    <!-- Formulaire de validation -->
-    <form id="confirmOrderForm" action="{{ route('merceries.order', $mercerie->id) }}" method="POST">
-        @csrf
-        @foreach($details as $index => $item)
-            <input type="hidden" name="items[{{ $index }}][merchant_supply_id]" value="{{ $item['merchant_supply_id'] ?? '' }}">
-            <input type="hidden" name="items[{{ $index }}][quantity]" value="{{ $item['quantity'] }}">
-        @endforeach
+    .card-custom:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    }
 
-        <button type="button" id="confirmOrderBtn" class="btn btn-success">Valider la commande</button>
-        <a href="{{ route('merceries.show', $mercerie->id) }}" class="btn btn-secondary">Modifier</a>
-    </form>
-</div>
+    /* ===== Tableau ===== */
+    table.table {
+        border-radius: 10px;
+        overflow: hidden;
+        min-width: 600px;
+    }
 
-<!-- Toast de confirmation -->
-<div class="toast-container position-fixed top-0 end-0 p-3">
-  <div id="confirmationToast" class="toast align-items-center text-white bg-success border-0" role="alert">
-    <div class="d-flex">
-      <div class="toast-body">
-        Confirmer la validation de la commande ?
-        <div class="mt-2 pt-2 border-top d-flex justify-content-between">
-            <button type="button" class="btn btn-light btn-sm me-2" id="confirmYes">Oui, valider</button>
-            <button type="button" class="btn btn-outline-light btn-sm" id="confirmNo">Annuler</button>
-        </div>
-      </div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    table thead {
+        background-color: #4F0341;
+        color: #fff;
+    }
+
+    table tbody tr:hover {
+        background-color: #f9f2fb;
+    }
+
+    /* ===== Boutons ===== */
+    .btn-primary-custom {
+        background-color: #4F0341;
+        border: none;
+        color: #fff;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-primary-custom:hover {
+        background-color: #7c0666;
+    }
+
+    .btn-secondary-custom {
+        background-color: #f1f1f1;
+        color: #4F0341;
+        border: 1px solid #4F0341;
+        transition: all 0.3s ease;
+    }
+
+    .btn-secondary-custom:hover {
+        background-color: #4F0341;
+        color: white;
+    }
+
+    .text-total {
+        color: #4F0341;
+        font-weight: bold;
+    }
+
+    /* ===== Responsivité ===== */
+    @media (max-width: 992px) {
+        .page-title h1 {
+            font-size: 1.6rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-title {
+            padding: 1.5rem 1rem;
+        }
+
+        .page-title h1 {
+            font-size: 1.4rem;
+        }
+
+        .card-custom {
+            padding: 1.2rem;
+        }
+
+        .text-total {
+            text-align: center !important;
+            margin-top: 1.5rem;
+        }
+
+        form#confirmOrderForm {
+            flex-direction: column !important;
+            align-items: center !important;
+        }
+
+        form#confirmOrderForm .btn {
+            width: 100%;
+            max-width: 320px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .page-title h1 {
+            font-size: 1.2rem;
+        }
+    }
+</style>
+
+<div class="container my-5">
+    <!-- Titre principal -->
+    <div class="page-title">
+        <h1>Prévisualisation de la commande - {{ $mercerie->name }}</h1>
     </div>
-  </div>
+
+    <!-- Carte principale -->
+    <div class="card-custom">
+        <div class="table-responsive">
+            <table class="table table-bordered text-center align-middle">
+                <thead>
+                    <tr>
+                        <th>Fourniture</th>
+                        <th>Quantité</th>
+                        <th>Prix Unitaire</th>
+                        <th>Sous-total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($details as $item)
+                    <tr>
+                        <td>{{ $item['supply'] }}</td>
+                        <td>{{ $item['quantity'] }}</td>
+                        <td>{{ number_format($item['price'], 0, ',', ' ') }} FCFA</td>
+                        <td>{{ number_format($item['subtotal'], 0, ',', ' ') }} FCFA</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
+        <h4 class="text-end mt-4 text-total">
+            Total : {{ number_format($total, 0, ',', ' ') }} FCFA
+        </h4>
+
+        <!-- Formulaire de validation -->
+        <form id="confirmOrderForm" 
+              action="{{ route('merceries.order', $mercerie->id) }}" 
+              method="POST" 
+              class="mt-4 d-flex justify-content-end gap-3 flex-wrap">
+            @csrf
+            @foreach($details as $index => $item)
+                <input type="hidden" name="items[{{ $index }}][merchant_supply_id]" value="{{ $item['merchant_supply_id'] ?? '' }}">
+                <input type="hidden" name="items[{{ $index }}][quantity]" value="{{ $item['quantity'] }}">
+            @endforeach
+
+            <button type="button" id="confirmOrderBtn" class="btn btn-primary-custom px-4">Valider la commande</button>
+            <a href="{{ route('merceries.show', $mercerie->id) }}" class="btn btn-secondary-custom px-4">Modifier</a>
+        </form>
+    </div>
 </div>
 @endsection
 
 @push('scripts')
+<!-- Import SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const confirmBtn = document.getElementById('confirmOrderBtn');
-    const toastEl = document.getElementById('confirmationToast');
-    const toast = new bootstrap.Toast(toastEl);
-    const confirmYes = document.getElementById('confirmYes');
-    const confirmNo = document.getElementById('confirmNo');
     const form = document.getElementById('confirmOrderForm');
 
     confirmBtn.addEventListener('click', function() {
-        toast.show();
-    });
-
-    confirmYes.addEventListener('click', function() {
-        toast.hide();
-        form.submit();
-    });
-
-    confirmNo.addEventListener('click', function() {
-        toast.hide();
+        Swal.fire({
+            title: 'Confirmer la commande ?',
+            text: "Souhaitez-vous vraiment valider cette commande ?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#4F0341',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Oui, valider',
+            cancelButtonText: 'Annuler',
+            background: '#fff',
+            color: '#4F0341',
+            customClass: {
+                popup: 'rounded-4 shadow-lg',
+                confirmButton: 'btn btn-primary-custom',
+                cancelButton: 'btn btn-secondary-custom'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
     });
 });
 </script>

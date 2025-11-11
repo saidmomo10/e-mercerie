@@ -1,20 +1,23 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="merceries-container">
-    <h1 class="page-title">Liste des merceries</h1>
+<!-- TITRE PRINCIPAL -->
+<div class="page-title text-center py-4">
+    <h1>Liste des merceries</h1>
+</div>
 
-    <!-- Barre de recherche -->
-    <div class="search-bar position-relative mb-5">
-        <input type="text" id="search-merceries" class="search-input" placeholder="Rechercher une mercerie..." autocomplete="off" />
-        <div id="merceries-loader" class="loader-container d-none">
-            <div class="spinner-border text-primary" style="width: 1.5rem; height: 1.5rem;" role="status">
-                <span class="visually-hidden">Chargement...</span>
-            </div>
+<div class="merceries-container">
+
+    <!-- BARRE DE RECHERCHE (style modernisé) -->
+    <div class="search-wrapper mb-5">
+        <div class="search-bar">
+            <i class="fa fa-search"></i>
+            <input type="text" id="search-merceries" placeholder="Rechercher une mercerie..." autocomplete="off" />
+            <div id="merceries-loader" class="loader hidden"></div>
         </div>
     </div>
 
-    <!-- Liste des merceries -->
+    <!-- LISTE DES MERCERIES -->
     <div class="row" id="merceries-list">
         @forelse($merceries as $mercerie)
             <div class="col-md-4 mb-4 fade-in">
@@ -49,6 +52,7 @@
     </div>
 </div>
 
+<!-- === STYLES === -->
 <style>
 :root {
     --primary-color: #4F0341;
@@ -57,69 +61,64 @@
     --border-color: #f0f0f0;
     --text-color: #2d2d2d;
     --light-text: #777;
-}
-
-/* --- STRUCTURE GÉNÉRALE --- */
-.merceries-container {
-    max-width: 1100px;
-    margin: 2.5rem auto;
-    padding: 1rem;
-    color: var(--text-color);
-}
-
-.page-title {
-    text-align: center;
-    font-size: 2rem;
-    font-weight: 800;
-    color: var(--primary-color);
-    margin-bottom: 2rem;
+    --radius: 18px;
+    --shadow: 0 6px 16px rgba(0,0,0,0.05);
+    --transition: all 0.3s ease;
 }
 
 /* --- BARRE DE RECHERCHE --- */
+.search-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
 .search-bar {
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.search-input {
-    width: 100%;
+    background: #fff;
     border-radius: 50px;
-    border: 2px solid var(--border-color);
-    padding: 0.8rem 1.2rem;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    outline: none;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--shadow);
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1.5rem;
+    position: relative;
+    transition: var(--transition);
 }
 
-.search-input:focus {
-    border-color: var(--secondary-color);
-    box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.2);
-}
+.search-bar i { color: var(--primary-color); font-size: 1rem; margin-right: 0.8rem; }
+.search-bar input { flex: 1; border: none; outline: none; font-size: 1rem; color: #111827; }
+.search-bar input::placeholder { color: #9ca3af; }
 
-.loader-container {
+.loader {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--secondary-color);
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    animation: spin 1s linear infinite;
     position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
+    right: 1.2rem;
 }
+.hidden { display: none; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
 
-/* --- CARTE MERCERIE --- */
+/* --- CARTES MERCERIES --- */
 .mercerie-card {
     background: var(--background-color);
-    border-radius: 18px;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     border: 1px solid var(--border-color);
+    text-align: center;
 }
 
 .mercerie-card:hover {
     transform: translateY(-6px);
-    box-shadow: 0 10px 22px rgba(147, 51, 234, 0.2);
+    box-shadow: 0 10px 22px rgba(79, 3, 65, 0.25);
 }
 
-/* --- IMAGE --- */
 .card-image {
     position: relative;
     height: 180px;
@@ -133,15 +132,13 @@
     transition: transform 0.4s ease;
 }
 
-.mercerie-card:hover img {
-    transform: scale(1.05);
-}
+.mercerie-card:hover img { transform: scale(1.05); }
 
 .card-badge {
     position: absolute;
     top: 10px;
     left: 10px;
-    background: var(--secondary-color);
+    background: var(--primary-color);
     color: #fff;
     padding: 0.35rem 0.9rem;
     border-radius: 12px;
@@ -149,10 +146,7 @@
     font-weight: 600;
 }
 
-/* --- CONTENU --- */
-.card-content {
-    padding: 1.2rem 1.5rem;
-}
+.card-content { padding: 1.2rem 1.5rem; }
 
 .card-title {
     font-weight: 700;
@@ -167,11 +161,8 @@
     margin-bottom: 1.2rem;
 }
 
-.card-info i {
-    color: var(--secondary-color);
-}
+.card-info i { color: var(--secondary-color); }
 
-/* --- BOUTON --- */
 .soft-btn {
     display: block;
     width: 100%;
@@ -180,7 +171,7 @@
     font-weight: 600;
     text-align: center;
     font-size: 0.95rem;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     text-decoration: none;
 }
 
@@ -191,31 +182,13 @@
 
 .soft-btn.purple:hover {
     background: var(--secondary-color);
-    transform: scale(1.02);
+    transform: scale(1.03);
     box-shadow: 0 4px 10px rgba(147, 51, 234, 0.3);
 }
 
-/* --- ANIMATION APPARITION --- */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.fade-in {
-    animation: fadeInUp 0.6s ease forwards;
-}
-
-.fade-in:nth-child(1) { animation-delay: 0.1s; }
-.fade-in:nth-child(2) { animation-delay: 0.2s; }
-.fade-in:nth-child(3) { animation-delay: 0.3s; }
-.fade-in:nth-child(4) { animation-delay: 0.4s; }
-.fade-in:nth-child(5) { animation-delay: 0.5s; }
+/* --- ANIMATION --- */
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeInUp 0.6s ease forwards; }
 </style>
 
 @push('scripts')
@@ -230,21 +203,21 @@ document.addEventListener('DOMContentLoaded', function () {
         clearTimeout(timer);
         timer = setTimeout(() => {
             const query = searchInput.value.trim();
-            loader.classList.remove('d-none');
+            loader.classList.remove('hidden');
 
-                fetch(`{{ route('api.merceries.search') }}?search=${encodeURIComponent(query)}`, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
-                    .then(r => {
-                        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                        return r.json();
-                    })
-                    .then(renderMerceries)
-                    .catch(() => {
-                    merceriesList.innerHTML = `
-                        <div class="col-12 text-center mt-3">
-                            <div class="alert alert-danger">Erreur lors de la recherche.</div>
-                        </div>`;
-                })
-                .finally(() => loader.classList.add('d-none'));
+            fetch(`{{ route('api.merceries.search') }}?search=${encodeURIComponent(query)}`, { 
+                credentials: 'same-origin', 
+                headers: { 'Accept': 'application/json' } 
+            })
+            .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+            .then(renderMerceries)
+            .catch(() => {
+                merceriesList.innerHTML = `
+                    <div class="col-12 text-center mt-3">
+                        <div class="alert alert-danger">Erreur lors de la recherche.</div>
+                    </div>`;
+            })
+            .finally(() => loader.classList.add('hidden'));
         }, 300);
     });
 

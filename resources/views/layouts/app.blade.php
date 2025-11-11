@@ -518,7 +518,7 @@
         <section class="section">
             <div class="container-fluid">
                 <!-- ========== title-wrapper start ========== -->
-                <div class="title-wrapper pt-30">
+                <div class="title-wrapper">
                     <div class="row align-items-center">
                     <div class="col-lg-12">
                             <div class="title">

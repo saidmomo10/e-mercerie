@@ -2,85 +2,133 @@
 
 @section('content')
 <style>
-/* === Styles Modernisés === */
-
-.card-style {
-    background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-    padding: 2rem 2.5rem;
-    max-width: 650px;
-    margin: 0 auto;
+/* === STYLES GLOBAUX MODERNISÉS === */
+:root {
+    --primary: #4F0341;
+    --secondary: #8b166a;
+    --bg-light: #faf5fb;
+    --text-dark: #2d2d2d;
+    --radius: 16px;
+    --shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
+
+/* === CONTENEUR PRINCIPAL === */
+.card-style {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 2.5rem;
+    max-width: 700px;
+    margin: 0 auto;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-style:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* === FORMULAIRES === */
 label {
     font-weight: 600;
+    color: var(--text-dark);
     margin-bottom: 6px;
-    color: #333;
     display: block;
 }
 
 input[type="text"],
 input[type="number"] {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.8rem;
     border: 1px solid #ccc;
     border-radius: 10px;
     font-size: 1rem;
     transition: all 0.3s ease;
 }
 
-input[type="text"]:focus,
-input[type="number"]:focus {
-    border-color: #6a0b52;
+input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 6px rgba(79, 3, 65, 0.3);
     outline: none;
-    box-shadow: 0 0 6px rgba(106, 11, 82, 0.3);
 }
 
+/* === BOUTONS === */
 .btn-primary-custom {
-    background-color: #6a0b52;
+    background-color: var(--primary);
     color: #fff;
     border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 10px;
+    padding: 0.8rem 1.8rem;
+    border-radius: 12px;
     font-weight: 500;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
 .btn-primary-custom:hover {
-    background-color: #8b166a;
+    background-color: var(--secondary);
     transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(79, 3, 65, 0.25);
 }
 
 .btn-secondary-custom {
-    background-color: #f1f1f1;
-    color: #4F0341;
+    background-color: #f5f5f5;
+    color: var(--primary);
     border: 1px solid #d3d3d3;
-    padding: 0.75rem 1.5rem;
-    border-radius: 10px;
+    padding: 0.8rem 1.8rem;
+    border-radius: 12px;
     font-weight: 500;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
 .btn-secondary-custom:hover {
-    background-color: #e6d9e6;
+    background-color: #efe5ef;
+    color: var(--secondary);
 }
 
+/* === ALERTES === */
 .alert-errors {
-    background-color: #fef3f3;
-    border-left: 4px solid #dc3545;
+    background-color: #fff3f3;
+    border-left: 5px solid #dc3545;
     color: #a00;
     padding: 1rem 1.25rem;
     border-radius: 10px;
     margin-bottom: 1.5rem;
 }
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 768px) {
+
+    .card-style {
+        padding: 1.5rem;
+        margin: 0 1rem;
+    }
+
+    .btn-primary-custom,
+    .btn-secondary-custom {
+        width: 100%;
+        justify-content: center;
+        font-size: 1rem;
+    }
+
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
 </style>
 
-<!-- === En-tête pleine largeur === -->
+<!-- === EN-TÊTE === -->
 <div class="page-title">
-    <h1>Modifier la fourniture</h1>
+    <h1>Modifier la Fourniture</h1>
 </div>
 
+<!-- === CONTENU PRINCIPAL === -->
 <div class="card-style">
     @if ($errors->any())
         <div class="alert-errors">
@@ -102,7 +150,7 @@ input[type="number"]:focus {
         </div>
 
         <div class="mb-3">
-            <label for="price">Prix (€) :</label>
+            <label for="price">Prix (FCFA) :</label>
             <input type="number" id="price" name="price" step="0.01" min="0" 
                    value="{{ $merchantSupply->price }}" required>
         </div>
@@ -115,16 +163,16 @@ input[type="number"]:focus {
 
         <div class="d-flex justify-content-between align-items-center">
             <a href="{{ route('merchant.supplies.index') }}" class="btn btn-secondary-custom">
-                <i class="fa-solid fa-arrow-left me-1"></i> Retour
+                <i class="fa-solid fa-arrow-left"></i> Retour
             </a>
             <button type="button" id="submit-btn" class="btn btn-primary-custom">
-                <i class="fa-solid fa-save me-1"></i> Mettre à jour
+                <i class="fa-solid fa-save"></i> Mettre à jour
             </button>
         </div>
     </form>
 </div>
 
-<!-- === Script SweetAlert2 === -->
+<!-- === SCRIPT SWEETALERT2 === -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const submitBtn = document.getElementById('submit-btn');
@@ -134,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         Swal.fire({
             title: 'Confirmer la mise à jour ?',
-            text: "Les informations de la fourniture seront modifiées.",
+            text: "Les informations de cette fourniture seront modifiées.",
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#4F0341',
@@ -143,9 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
             cancelButtonText: 'Annuler',
             customClass: { popup: 'rounded-4 shadow-lg' }
         }).then((result) => {
-            if (result.isConfirmed) {
-                form.submit();
-            }
+            if (result.isConfirmed) form.submit();
         });
     });
 });

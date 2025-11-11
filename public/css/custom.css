@@ -9,6 +9,31 @@
   --transition: all 0.3s ease;
 }
 
+/* Prevent horizontal overflow globally (safe) */
+html, body {
+  overflow-x: hidden;
+}
+
+/* Make sure wide elements don't force horizontal scroll */
+img, video, iframe, embed, object {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Utility: avoid elements with large fixed widths on small screens */
+@media (max-width: 768px) {
+  .container, .main-wrapper, .header, .sidebar-nav-wrapper {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* prevent large negative margins or wide cards */
+  .page-title, .card, .dropdown-menu {
+    overflow-x: hidden;
+    word-wrap: break-word;
+  }
+}
+
 .page-title {
       background-color: var(--primary-color);
       padding: 1.5rem 2rem;

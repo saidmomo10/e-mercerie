@@ -3,7 +3,7 @@
 @section('content')
 <div class="supplies-container">
         <!-- Titre principal -->
-        <div class="page-title">
+        <div class="page-title text-center py-4">
                 <h1>Sélection des fournitures</h1>
         </div>
 

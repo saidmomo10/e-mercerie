@@ -1,7 +1,117 @@
-
 <link rel="stylesheet" href="{{ asset('css/login.css') }}">
 
-logo
+<style>
+    /* === Palette principale === */
+    :root {
+        --main-color: #4F0341;
+        --accent-color: #7a1761;
+        --text-light: #fff;
+        --text-dark: #333;
+        --bg-light: #f8f8fa;
+        --error-color: #e63946;
+    }
+
+    body {
+        background: var(--bg-light);
+        color: var(--text-dark);
+    }
+
+    h1 {
+        color: var(--main-color);
+    }
+
+    /* === Champs de saisie === */
+    input, select {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 12px;
+        width: 100%;
+        margin-bottom: 15px;
+        font-size: 14px;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    input:focus, select:focus {
+        border-color: var(--main-color);
+        box-shadow: 0 0 5px rgba(79, 3, 65, 0.3);
+        outline: none;
+    }
+
+    /* === Boutons === */
+    button {
+        background-color: var(--main-color);
+        color: var(--text-light);
+        border: none;
+        border-radius: 25px;
+        padding: 12px 25px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.2s;
+    }
+
+    button:hover {
+        background-color: var(--accent-color);
+        transform: translateY(-2px);
+    }
+
+    button.ghost {
+        background: transparent;
+        border: 2px solid var(--text-light);
+        color: var(--text-light);
+        border-radius: 25px;
+        padding: 10px 25px;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    button.ghost:hover {
+        background-color: var(--text-light);
+        color: var(--main-color);
+    }
+
+    /* === Liens === */
+    a {
+        color: var(--main-color);
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    /* === Alertes d'erreurs === */
+    .alert.error {
+        background-color: #fdecea;
+        color: var(--error-color);
+        border-left: 4px solid var(--error-color);
+        padding: 10px 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        font-size: 14px;
+    }
+
+    /* === Container principal === */
+    .container {
+        background-color: var(--text-light);
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    /* === Overlay panels === */
+    .overlay {
+        background: linear-gradient(to right, var(--main-color), var(--accent-color));
+    }
+
+    .overlay-panel h1 {
+        color: var(--text-light);
+    }
+
+    .overlay-panel p {
+        color: #f3e9f5;
+    }
+</style>
+
 <div class="container" id="container">
     {{-- FORMULAIRE D’INSCRIPTION --}}
     <div class="form-container sign-up-container">
@@ -54,8 +164,18 @@ logo
             <input type="password" name="password" placeholder="Mot de passe" required />
             <button type="submit">Se connecter</button>
 
-            <a href="#">Mot de passe oublié ?</a>
+            <a href="{{ route('password.request') }}">Mot de passe oublié ?</a>
         </form>
+
+        @if(session('unverified_email'))
+            <div class="mt-3">
+                <form method="POST" action="{{ route('verification.resend') }}">
+                    @csrf
+                    <input type="hidden" name="email" value="{{ session('unverified_email') }}">
+                    <button type="submit" class="btn btn-link">Renvoyer l'email de confirmation</button>
+                </form>
+            </div>
+        @endif
     </div>
 
     {{-- OVERLAY ANIMÉ --}}
@@ -77,3 +197,18 @@ logo
 
 <script src="{{ asset('js/login.js') }}"></script>
 
+<!-- SweetAlert2 for flash messages -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+@if(session('success') || session('error'))
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        Swal.fire({
+            icon: '{{ session("success") ? "success" : "error" }}',
+            title: '{{ session("success") ? "Succès" : "Erreur" }}',
+            text: `{{ session('success') ?? session('error') }}`,
+            confirmButtonColor: '#4F0341'
+        });
+    });
+</script>
+@endif

@@ -2,7 +2,7 @@
 
 @section('content')
 <!-- 🔹 En-tête principale pleine largeur -->
-<div class="page-title">
+<div class="page-title text-center py-4">
     <h1>{{ $mercerie->name }}</h1>
 </div>
 
@@ -181,6 +181,7 @@
     justify-content: center;
     align-items: center;
     height: 180px;
+    padding: 1.5rem;
 }
 .supply-image img {
     width: 80%;

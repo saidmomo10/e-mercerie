@@ -11,11 +11,28 @@ class MerchantSupplyController extends Controller
     // Affiche toutes les fournitures du marchand
     public function index(Request $request)
     {
-        $merchantSupplies = MerchantSupply::with('supply')
-            ->where('user_id', $request->user()->id)
-            ->get();
+        $search = $request->get('search');
 
-        return view('merchant.supplies.index', compact('merchantSupplies'));
+        $query = MerchantSupply::with('supply')
+            ->where('user_id', $request->user()->id)
+            ->latest();
+
+        if ($search) {
+            $query->whereHas('supply', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            });
+        }
+
+        $merchantSupplies = $query->paginate(1)->withQueryString();
+
+        // If AJAX request, return rendered partials for rows and pagination
+        if ($request->ajax()) {
+            $rows = view('merchant.supplies._rows', compact('merchantSupplies'))->render();
+            $pagination = view('merchant.supplies._pagination', compact('merchantSupplies'))->render();
+            return response()->json(['rows' => $rows, 'pagination' => $pagination]);
+        }
+
+        return view('merchant.supplies.index', compact('merchantSupplies', 'search'));
     }
 
     // Formulaire pour ajouter une nouvelle fourniture

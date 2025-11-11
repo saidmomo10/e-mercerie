@@ -102,6 +102,48 @@
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   }
+
+  /* ===== Pagination Stylisée ===== */
+.pagination {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    gap: 0.5rem;
+}
+
+.pagination li {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.pagination li a,
+.pagination li span {
+    display: block;
+    padding: 0.5rem 0.9rem;
+    color: #6a0b52;
+    background-color: #f8f5fa;
+    border: 1px solid #e5d1e9;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.pagination li a:hover {
+    background-color: #6a0b52;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.pagination .active span {
+    background-color: #6a0b52;
+    color: #fff;
+    border-color: #6a0b52;
+}
+
+.pagination .disabled span {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 </style>
 
 <div class="container-fluid">
