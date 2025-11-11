@@ -509,6 +509,24 @@
         </div>
       </div>
       <!-- ========== header end ========== -->
+      <!-- === Modal: Complete Merchant Profile (triggered when merchant profile incomplete) === -->
+      <div class="modal fade" id="completeProfileModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content rounded-4">
+            <div class="modal-header">
+              <h5 class="modal-title">Compléter votre profil</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p>Avant d'ajouter votre première fourniture, veuillez compléter les informations de votre mercerie (adresse, ville, téléphone).</p>
+            </div>
+            <div class="modal-footer">
+              <a href="{{ route('merceries.profile.edit') }}" style="background: #4F0341; color: white; padding: 10px 20px; border-radius: 5px;">Compléter mon profil</a>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Plus tard</button>
+            </div>
+          </div>
+        </div>
+      </div>
         <!-- @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
@@ -608,6 +626,22 @@
         const bsToast = new bootstrap.Toast(toast);
         bsToast.show();
     });
+</script>
+@endif
+
+@if(session('showProfileModal') || session('show_profile_modal'))
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    try {
+      var modalEl = document.getElementById('completeProfileModal');
+      if (modalEl && typeof bootstrap !== 'undefined') {
+        var bsModal = new bootstrap.Modal(modalEl);
+        bsModal.show();
+      }
+    } catch (e) {
+      console.error('Failed to show complete profile modal', e);
+    }
+  });
 </script>
 @endif
 
