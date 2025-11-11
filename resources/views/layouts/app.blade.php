@@ -252,6 +252,7 @@
               <span class="text">Tables</span>
             </a>
           </li> -->
+          @if(auth()->check())
           <span class="divider"><hr /></span>
 
           <li class="nav-item">
@@ -271,6 +272,7 @@
               <span class="text">Notifications</span>
             </a>
           </li>
+          @endif
         </ul>
       </nav>
       <!-- <div class="promo-box">

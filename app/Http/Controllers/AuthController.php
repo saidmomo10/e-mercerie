@@ -153,20 +153,11 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        if (! auth()->attempt($credentials)) {
+        if (!auth()->attempt($credentials)) {
             return back()->withErrors(['email' => 'Identifiants incorrects'])->withInput();
         }
 
-        // Regenerate session after successful authentication
         $request->session()->regenerate();
-
-        // If email not verified, immediately logout and inform the user
-        $user = auth()->user();
-        if (! $user->hasVerifiedEmail()) {
-            auth()->logout();
-            // Keep the email so user can easily resend verification
-            return back()->withInput()->with(['error' => 'Votre adresse e-mail n\'est pas vérifiée. Vérifiez votre boîte mail ou demandez un nouvel e-mail de vérification.', 'unverified_email' => $user->email]);
-        }
 
         return redirect()->route('supplies.index')->with('success', 'Connexion réussie !');
     }
