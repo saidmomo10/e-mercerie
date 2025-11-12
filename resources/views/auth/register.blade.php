@@ -1,43 +1,232 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inscription – Finger Style</title>
+<style>
+    @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap");
 
-@section('content')
-<h1>Inscription</h1>
+  /* === RESET === */
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Plus Jakarta Sans', sans-serif !important; }
 
-@if($errors->any())
-    <div style="color:red;">
-        <ul>
-            @foreach($errors->all() as $error) <li>{{ $error }}</li> @endforeach
-        </ul>
-    </div>
+  /* === PALETTE === */
+  :root {
+      --main-color: #4F0341;
+      --accent-color: #7a1761;
+      --text-light: #fff;
+      --text-dark: #333;
+      --bg-light: #f8f8fa;
+      --error-color: #e63946;
+  }
+
+  body {
+      background: linear-gradient(135deg, #4F0341, #9333ea);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      color: var(--text-dark);
+      overflow: hidden;
+  }
+
+  /* === CONTAINER === */
+  .container {
+      background-color: var(--text-light);
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      overflow: hidden;
+      width: 900px;
+      display: flex;
+      flex-wrap: wrap;
+      animation: fadeIn 1s ease;
+  }
+
+  /* === FORM SECTION === */
+  .form-container {
+      flex: 1;
+      min-width: 380px;
+      padding: 60px 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      animation: slideInLeft 1.2s ease forwards;
+  }
+
+  .form-container h1 {
+      font-size: 2rem;
+      color: var(--main-color);
+      font-weight: 700;
+      margin-bottom: 15px;
+      opacity:0;
+      transform: translateY(20px);
+      animation: fadeUp 0.8s forwards 0.2s;
+  }
+
+  input, select {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 14px;
+      width: 100%;
+      margin-bottom: 15px;
+      font-size: 14px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  input:focus, select:focus {
+      border-color: var(--main-color);
+      box-shadow: 0 0 8px rgba(79,3,65,0.3);
+      outline: none;
+  }
+
+  button {
+      background-color: var(--main-color);
+      color: var(--text-light);
+      border: none;
+      border-radius: 25px;
+      padding: 14px 25px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+  }
+
+  button:hover {
+      background-color: var(--accent-color);
+      transform: translateY(-2px);
+  }
+
+  a {
+      color: var(--main-color);
+      text-decoration: none;
+      font-size: 14px;
+  }
+
+  a:hover {
+      text-decoration: underline;
+  }
+
+  .alert.error {
+      background-color: #fdecea;
+      color: var(--error-color);
+      border-left: 4px solid var(--error-color);
+      padding: 10px 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 14px;
+  }
+
+  .signup-text {
+      margin-top: 18px;
+      font-size: 14px;
+      opacity:0;
+      transform: translateY(20px);
+      animation: fadeUp 0.8s forwards 1.2s;
+  }
+
+  /* === ILLUSTRATION === */
+  .illustration {
+      flex: 1;
+      background: linear-gradient(135deg, #4F0341, #9333ea);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 380px;
+      animation: slideInRight 1.2s ease forwards;
+  }
+
+  .illustration img {
+      width: 100%;
+      height: 100%;
+      max-width: 400px;
+      height: auto;
+      object-fit: contain;
+      /* animation: float 4s ease-in-out infinite; */
+  }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 1024px) {
+      .container { width: 95%; }
+      .form-container { padding: 50px 30px; }
+  }
+
+  @media (max-width: 850px) {
+      .container { flex-direction: column; width: 90%; }
+      .form-container { padding: 40px 20px; }
+      .illustration { width: 100%; min-height: 200px; margin-top: 20px; }
+      .illustration img { width: 80%; max-width: 300px; }
+  }
+
+  @media (max-width: 500px) {
+      .form-container h1 { font-size: 1.6rem; }
+      input, select { font-size: 13px; padding: 12px; }
+      button { padding: 12px 20px; font-size: 14px; }
+      .signup-text { font-size: 13px; }
+  }
+
+  /* === ANIMATIONS === */
+  @keyframes fadeIn { from { opacity:0; transform: scale(0.95); } to { opacity:1; transform:scale(1); } }
+  @keyframes slideInLeft { from { transform: translateX(-100px); opacity:0; } to { transform: translateX(0); opacity:1; } }
+  @keyframes slideInRight { from { transform: translateX(100px); opacity:0; } to { transform: translateX(0); opacity:1; } }
+  @keyframes float { 0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);} }
+  @keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Formulaire d'inscription -->
+  <div class="form-container sign-up-container">
+      <form action="{{ route('register.submit') }}" method="POST">
+          @csrf
+          <h1>Inscription</h1>
+
+          @if($errors->any())
+              <div class="alert error">
+                  <ul>
+                      @foreach($errors->all() as $error)
+                          <li>{{ $error }}</li>
+                      @endforeach
+                  </ul>
+              </div>
+          @endif
+
+          <input type="text" name="name" placeholder="Nom" value="{{ old('name') }}" required>
+          <input type="email" name="email" placeholder="Email" value="{{ old('email') }}" required>
+          <input type="password" name="password" placeholder="Mot de passe" required>
+          <input type="password" name="password_confirmation" placeholder="Confirmer mot de passe" required>
+          <select name="role" required>
+              <option value="">-- Sélectionner un rôle --</option>
+              <option value="couturier" {{ old('role')=='couturier'?'selected':'' }}>Couturier</option>
+              <option value="mercerie" {{ old('role')=='mercerie'?'selected':'' }}>Mercerie</option>
+          </select>
+
+          <button type="submit">S'inscrire</button>
+      </form>
+
+      <p class="signup-text">Déjà inscrit ? <a href="{{ route('login.form') }}">Se connecter</a></p>
+  </div>
+
+  <!-- Illustration -->
+  <div class="illustration">
+      <img src="{{ asset('images/couturière.jpg') }}" alt="Illustration Inscription">
+  </div>
+</div>
+
+<script src="{{ asset('js/login.js') }}"></script>
+<!-- SweetAlert2 pour messages flash -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@if(session('success') || session('error'))
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+      Swal.fire({
+          icon: '{{ session("success") ? "success" : "error" }}',
+          title: '{{ session("success") ? "Succès" : "Erreur" }}',
+          text: `{{ session('success') ?? session('error') }}`,
+          confirmButtonColor: '#4F0341'
+      });
+  });
+</script>
 @endif
 
-<form action="{{ route('register.submit') }}" method="POST">
-    @csrf
-    <div>
-        <label>Nom :</label>
-        <input type="text" name="name" value="{{ old('name') }}" required>
-    </div>
-    <div>
-        <label>Email :</label>
-        <input type="email" name="email" value="{{ old('email') }}" required>
-    </div>
-    <div>
-        <label>Mot de passe :</label>
-        <input type="password" name="password" required>
-    </div>
-    <div>
-        <label>Confirmer mot de passe :</label>
-        <input type="password" name="password_confirmation" required>
-    </div>
-    <div>
-        <label>Rôle :</label>
-        <select name="role" required>
-            <option value="">-- Sélectionner --</option>
-            <option value="couturier" {{ old('role')=='couturier'?'selected':'' }}>Couturier</option>
-            <option value="mercerie" {{ old('role')=='mercerie'?'selected':'' }}>Mercerie</option>
-        </select>
-    </div>
-    <button type="submit">S'inscrire</button>
-</form>
-<p>Déjà inscrit ? <a href="{{ route('login.form') }}">Se connecter</a></p>
-@endsection
+</body>
+</html>

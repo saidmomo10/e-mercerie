@@ -28,11 +28,43 @@ class MerchantController extends Controller
         return view('couturier.merceries.index', compact('merceries', 'search'));
     }
 
+    /**
+     * Public landing page showing merceries with supplies
+     */
+    public function landing(Request $request)
+    {
+        $search = $request->input('search');
+
+        $merceries = User::where('role', 'mercerie')
+            ->whereHas('merchantSupplies')
+            ->when(auth()->check(), function ($q) {
+                $q->where('id', '!=', auth()->id());
+            })
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('city', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%");
+                });
+            })
+            ->with('merchantSupplies')
+            ->get();
+
+        return view('landing', compact('merceries', 'search'));
+    }
+
     public function searchAjax(Request $request)
     {
         $query = $request->input('search');
 
         $merceries = User::where('role', 'mercerie')
+            // Only merceries (role) that have supplies
+            ->whereHas('merchantSupplies')
+            // Exclude currently authenticated merchant if present
+            ->when(auth()->check(), function ($q) {
+                $q->where('id', '!=', auth()->id());
+            })
+            // Apply search filter when provided
             ->when($query, function ($q) use ($query) {
                 $q->where(function ($sub) use ($query) {
                     $sub->where('name', 'like', "%{$query}%")

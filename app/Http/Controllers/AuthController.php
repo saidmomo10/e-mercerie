@@ -159,7 +159,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->route('supplies.index')->with('success', 'Connexion réussie !');
+        return redirect()->route('landing')->with('success', 'Connexion réussie !');
     }
 
     // Déconnexion via Blade

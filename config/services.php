@@ -31,4 +31,10 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'webpush' => [
+        'public' => env('WEBPUSH_VAPID_PUBLIC'),
+        'private' => env('WEBPUSH_VAPID_PRIVATE'),
+        'subject' => env('WEBPUSH_VAPID_SUBJECT', 'mailto:admin@example.com'),
+    ],
+
 ];

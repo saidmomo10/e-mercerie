@@ -176,14 +176,17 @@ class OrderController extends Controller
         // Mise à jour du total
         $order->update(['total_amount' => $total]);
 
-        // Notification à la mercerie (similaire à storeWeb)
+        // Notification à la mercerie
         try {
             $mercerie = $order->mercerie;
             if ($mercerie) {
-                $mercerie->notify(new NewOrderReceived($order));
+                $notification = new NewOrderReceived($order);
+                $mercerie->notify($notification);
+                
+                // 🔥 ENVOYER LES NOTIFICATIONS WEB PUSH À LA MERCERIE
+                $notification->sendWebPushNotification($mercerie);
             }
         } catch (\Exception $e) {
-            // Ne bloque pas l'utilisateur, loggons juste l'erreur
             logger()->error('Erreur lors de l\'envoi de la notification NewOrderReceived: ' . $e->getMessage());
         }
 
@@ -278,7 +281,11 @@ class OrderController extends Controller
             $order->update(['status' => 'confirmed']);
 
             // Notification au couturier
-            $order->couturier->notify(new OrderAccepted($order));
+            $notification = new OrderAccepted($order);
+            $order->couturier->notify($notification);
+
+            // 🔥 ENVOYER LES NOTIFICATIONS WEB PUSH
+            $notification->sendWebPushNotification($order->couturier);
 
             DB::commit();
 
@@ -320,25 +327,29 @@ private function checkStockAvailability(Order $order)
 
 
 public function reject($id)
-    {
-        $order = Order::findOrFail($id);
-        $user = auth()->user();
+{
+    $order = Order::findOrFail($id);
+    $user = auth()->user();
 
-        if ($order->mercerie_id !== $user->id) {
-            abort(403, 'Action non autorisée.');
-        }
-
-        if ($order->status !== 'pending') {
-            return back()->with('error', 'Cette commande a déjà été traitée.');
-        }
-
-        $order->update(['status' => 'cancelled']);
-
-        // Notification au couturier
-        $order->couturier->notify(new OrderRejected($order));
-
-        return back()->with('success', 'Commande rejetée avec succès.');
+    if ($order->mercerie_id !== $user->id) {
+        abort(403, 'Action non autorisée.');
     }
+
+    if ($order->status !== 'pending') {
+        return back()->with('error', 'Cette commande a déjà été traitée.');
+    }
+
+    $order->update(['status' => 'cancelled']);
+
+    // Notification au couturier
+    $notification = new OrderRejected($order);
+    $order->couturier->notify($notification);
+
+    // 🔥 ENVOYER LES NOTIFICATIONS WEB PUSH
+    $notification->sendWebPushNotification($order->couturier);
+
+    return back()->with('success', 'Commande rejetée avec succès.');
+}
 
 
 

@@ -217,8 +217,12 @@ async function registerServiceWorkerAndSubscribe() {
     // get VAPID key from meta tag
     const vapidMeta = document.querySelector('meta[name="webpush-public-key"]');
     if (!vapidMeta) throw new Error('VAPID public key meta tag not found');
-    const publicKey = vapidMeta.getAttribute('content');
+    let publicKey = vapidMeta.getAttribute('content') || '';
+    // client-side sanitize: remove whitespace/newlines that can be introduced by env or templates
+    publicKey = publicKey.replace(/\s+/g, '');
+    console.debug('[push] vapid meta content (raw):', publicKey);
     const convertedKey = urlBase64ToUint8Array(publicKey);
+    console.debug('[push] convertedKey byteLength:', convertedKey && convertedKey.byteLength, 'expected 65');
 
     const newSub = await registration.pushManager.subscribe({
         userVisibleOnly: true,

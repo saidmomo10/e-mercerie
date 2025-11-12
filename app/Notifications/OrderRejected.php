@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Order;
+use App\Jobs\SendWebPush;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -18,7 +19,8 @@ class OrderRejected extends Notification implements ShouldQueue
 
     public function via($notifiable)
     {
-        return ['database', 'broadcast', 'mail', \App\Notifications\Channels\WebPushChannel::class];
+        return ['database', 'broadcast', 'mail'];
+        // Retirez \App\Notifications\Channels\WebPushChannel::class
     }
 
     public function toMail($notifiable)
@@ -51,14 +53,29 @@ class OrderRejected extends Notification implements ShouldQueue
         ]);
     }
 
+    /**
+     * Envoie la notification Web Push via la job
+     */
     public function toWebPush($notifiable)
     {
-        return [
+        // Cette méthode n'est plus utilisée directement
+        // La job SendWebPush sera appelée manuellement
+    }
+
+    /**
+     * Méthode appelée après l'envoi de la notification
+     */
+    public function sendWebPushNotification($notifiable)
+    {
+        $payload = [
             'title' => '❌ Commande rejetée #' . $this->order->id,
             'body' => 'Votre commande a été rejetée par la mercerie.',
             'url' => route('orders.show', $this->order->id),
             'icon' => null,
             'data' => ['order_id' => $this->order->id],
         ];
+
+        // Dispatch la job pour envoyer les notifications push
+        SendWebPush::dispatch($payload);
     }
 }

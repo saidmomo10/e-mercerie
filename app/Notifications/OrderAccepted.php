@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Order;
+use App\Jobs\SendWebPush;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -19,7 +20,8 @@ class OrderAccepted extends Notification implements ShouldQueue
 
     public function via($notifiable)
     {
-        return ['database', 'broadcast', 'mail', \App\Notifications\Channels\WebPushChannel::class];
+        return ['database', 'broadcast', 'mail'];
+        // Retirez \App\Notifications\Channels\WebPushChannel::class
     }
 
     public function toMail($notifiable)
@@ -53,14 +55,20 @@ class OrderAccepted extends Notification implements ShouldQueue
         ]);
     }
 
-    public function toWebPush($notifiable)
+    /**
+     * Envoie la notification Web Push via la job
+     */
+    public function sendWebPushNotification($notifiable)
     {
-        return [
+        $payload = [
             'title' => '✅ Commande acceptée #' . $this->order->id,
             'body' => 'Votre commande a été acceptée par la mercerie.',
             'url' => route('orders.show', $this->order->id),
-            'icon' => null,
+            'icon' => '/icon.png',
             'data' => ['order_id' => $this->order->id],
         ];
+
+        // Dispatch la job pour envoyer les notifications push
+        SendWebPush::dispatch($payload, $notifiable->id);
     }
 }

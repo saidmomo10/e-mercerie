@@ -55,18 +55,23 @@ class SendWebPushNotification implements ShouldQueue
 
         foreach ($subscriptions as $sub) {
             try {
+                // Build Subscription using keys array to match standard WebPush format
                 $subscription = Subscription::create([
                     'endpoint' => $sub->endpoint,
-                    'publicKey' => $sub->public_key,
-                    'authToken' => $sub->auth_token,
+                    'keys' => [
+                        'p256dh' => $sub->public_key,
+                        'auth' => $sub->auth_token,
+                    ],
                 ]);
+
+                Log::info('Sending WebPush to subscription', ['sub_id' => $sub->id, 'notifiable_id' => $this->notifiableId]);
 
                 $report = $webPush->sendOneNotification($subscription, json_encode($this->payload));
 
                 if ($report->isSuccess()) {
                     Log::info('WebPush sent to subscription', ['id' => $sub->id]);
                 } else {
-                    $statusCode = $report->getResponse()->getStatusCode();
+                    $statusCode = $report->getResponse() ? $report->getResponse()->getStatusCode() : null;
 
                     // Remove subscription if not found or gone
                     if (in_array($statusCode, [404, 410])) {

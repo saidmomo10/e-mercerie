@@ -1,10 +1,21 @@
 self.addEventListener('push', function(event) {
+  // Debug: log that we received a push event (visible in SW console)
+  try {
+    console.log('[sw] push received', event);
+  } catch (e) {
+    // some browsers may not allow console in SW, ignore
+  }
+
   let payload = {};
   if (event.data) {
     try {
       payload = event.data.json();
     } catch (e) {
-      payload = { title: 'Notification', body: event.data.text() };
+      try {
+        payload = { title: 'Notification', body: event.data.text() };
+      } catch (ee) {
+        payload = { title: 'Notification', body: '' };
+      }
     }
   }
 
@@ -17,7 +28,18 @@ self.addEventListener('push', function(event) {
     data: Object.assign({}, payload.data || {}, { url: payload.url || (payload.data && payload.data.url) || '/' })
   };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+  // Ensure we always show a notification (useful for debugging)
+  event.waitUntil(
+    (async () => {
+      try {
+        await self.registration.showNotification(title, options);
+        try { console.log('[sw] showNotification called', title, options); } catch (_) {}
+      } catch (err) {
+        try { console.error('[sw] showNotification error', err); } catch (_) {}
+        // Nothing more to do
+      }
+    })()
+  );
 });
 
 self.addEventListener('notificationclick', function(event) {

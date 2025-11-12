@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
   <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="webpush-public-key" content="{{ env('WEBPUSH_VAPID_PUBLIC') }}">
+  <meta name="webpush-public-key" content="{{ config('services.webpush.public') }}">
   @auth
     <meta name="current-user-id" content="{{ auth()->user()->id }}">
   @endauth
@@ -49,7 +49,7 @@
       <nav class="sidebar-nav">
         <ul>
             <li class="nav-item">
-                <a href="{{ route('supplies.index') }}">
+                <a href="{{ route('landing') }}">
                 <span class="icon">
                     <i class="fa-solid fa-house"></i>
                 </span>

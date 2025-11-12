@@ -48,7 +48,7 @@
                                 <i class="bi bi-box-seam"></i> {{ $supply->stock_quantity }} en stock
                             </div>
                         </div>
-
+                        @if($supply->stock_quantity > 0 && auth()->user()->isCouturier())
                         <div class="quantity-group">
                             <label for="quantity_{{ $supply->id }}">Quantité</label>
                             <input 
@@ -62,7 +62,7 @@
                             >
                             <input type="hidden" name="items[{{ $loop->index }}][merchant_supply_id]" value="{{ $supply->id }}">
                         </div>
-
+                        
                         <div class="d-grid mt-3">
                             <button type="button" class="btn btn-primary add-to-cart" 
                                 data-id="{{ $supply->id }}" 
@@ -72,6 +72,7 @@
                                 <i class="fa fa-cart-plus me-1"></i> Ajouter au panier
                             </button>
                         </div>
+                        @endif
                     </div>
                 </div>
             @endforeach

@@ -40,7 +40,9 @@ Route::get('/email/verify/{id}/{hash}', [\App\Http\Controllers\AuthController::c
 Route::post('/email/resend', [\App\Http\Controllers\AuthController::class, 'resend'])->middleware('throttle:6,1')->name('verification.resend');
 
 // Liste des fournitures (vue publique)
-Route::get('/', [SupplyController::class, 'index'])->name('supplies.index');
+// Route::get('/', [SupplyController::class, 'index'])->name('supplies.index');
+// Landing page dynamique: liste des merceries
+Route::get('/', [MerchantController::class, 'landing'])->name('landing');
 
 
 /*
@@ -101,9 +103,12 @@ Route::middleware('auth')->group(function () {
 
     // Couturier
     Route::prefix('couturier')->middleware('auth', 'role:couturier')->group(function () {
+        Route::post('/merceries/{id}/order', [OrderController::class, 'storeFromMerchant'])->name('merceries.order');
+    });
+
+    Route::prefix('couturier')->middleware('auth')->group(function () {
         Route::get('/merceries', [MerchantController::class, 'index'])->name('merceries.index');
         Route::get('/merceries/{id}', [MerchantController::class, 'show'])->name('merceries.show');
-        Route::post('/merceries/{id}/order', [OrderController::class, 'storeFromMerchant'])->name('merceries.order');
         Route::get('/api/merceries/search', [MerchantController::class, 'searchAjax'])->name('api.merceries.search');
     });
 
