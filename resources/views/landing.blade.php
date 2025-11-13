@@ -372,13 +372,15 @@ footer {
     <h1>Trouvez votre mercerie idéale</h1>
     <p>Découvrez les meilleures merceries de votre région et leurs produits uniques.</p>
     <div class="hero-buttons">
-      @if(auth()->user()->isMercerie())
-        <a href="{{ route('merchant.supplies.index') }}" class="btn btn-primary">Ajouter une fourniture</a>
-      @elseif(auth()->user()->isCouturier())
-        <a href="{{ route('supplies.selection') }}" class="btn btn-primary">Comparer les prix</a>
+      @auth
+        @if(auth()->user()->isMercerie())
+          <a href="{{ route('merchant.supplies.index') }}" class="btn btn-primary">Ajouter une fourniture</a>
+        @elseif(auth()->user()->isCouturier())
+          <a href="{{ route('supplies.selection') }}" class="btn btn-primary">Comparer les prix</a>
+        @endif
       @else
         <a href="#" class="btn btn-primary">Démarrer</a>
-      @endif
+      @endauth
         <!-- <button class="btn btn-outline">Try Demo</button> -->
     </div>
 </section>
