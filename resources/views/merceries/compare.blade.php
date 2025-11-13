@@ -2,7 +2,17 @@
 
 @section('content')
 <div class="compare-container">
-    <h1 class="page-title">Comparaison des merceries</h1>
+    <div class="page-title">
+        <h1>Comparaison des merceries</h1>
+    </div>
+
+    @if(isset($selectedCity) || isset($selectedQuarter))
+        <div style="text-align:center;margin-bottom:1rem;color:#555;">
+            <strong>Filtres appliqués :</strong>
+            @if($selectedCity) {{ $selectedCity->name }} @endif
+            @if($selectedQuarter) — {{ $selectedQuarter->name }} @endif
+        </div>
+    @endif
 
     <!-- Merceries disponibles -->
     <section class="section">
@@ -12,6 +22,9 @@
                 <div class="mercerie-card available">
                     <div class="mercerie-header">
                         <h3>{{ $mercerie['mercerie']['name'] }}</h3>
+                        @if(isset($mercerie['mercerie']['city_name']) || isset($mercerie['mercerie']['quarter_name']))
+                            <div style="font-size:0.9rem;color:#666;margin-top:6px;">📍 {{ $mercerie['mercerie']['city_name'] ?? '' }}@if(!empty($mercerie['mercerie']['quarter_name'])) — {{ $mercerie['mercerie']['quarter_name'] }}@endif</div>
+                        @endif
                         <span class="price">{{ number_format($mercerie['total_estime'], 0, ',', ' ') }} FCFA</span>
                     </div>
 
@@ -50,6 +63,9 @@
                 <div class="mercerie-card unavailable">
                     <div class="mercerie-header">
                         <h3>{{ $mercerie['mercerie']['name'] }}</h3>
+                        @if(isset($mercerie['mercerie']['city_name']) || isset($mercerie['mercerie']['quarter_name']))
+                            <div style="font-size:0.9rem;color:#666;margin-top:6px;">📍 {{ $mercerie['mercerie']['city_name'] ?? '' }}@if(!empty($mercerie['mercerie']['quarter_name'])) — {{ $mercerie['mercerie']['quarter_name'] }}@endif</div>
+                        @endif
                         <span class="status-tag">Non disponible</span>
                     </div>
                     <ul class="details-list unavailable-list">

@@ -16,13 +16,23 @@ class MerchantController extends Controller
             ->where('id', '!=', auth()->id()) // exclure la mercerie connectée
             ->whereHas('merchantSupplies')   // au moins une fourniture
             ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%")
-                      ->orWhere('city', 'like', "%{$search}%")
-                      ->orWhere('phone', 'like', "%{$search}%");
-                });
+                                $query->where(function ($q) use ($search) {
+                                        $q->where('name', 'like', "%{$search}%")
+                                            ->orWhere('email', 'like', "%{$search}%")
+                                            ->orWhere('phone', 'like', "%{$search}%");
+
+                                        // Search by related city name
+                    $q->orWhereHas('cityModel', function ($qc) use ($search) {
+                        $qc->where('name', 'like', "%{$search}%");
+                    });
+
+                    // Search by related quarter name
+                    $q->orWhereHas('quarter', function ($qq) use ($search) {
+                        $qq->where('name', 'like', "%{$search}%");
+                    });
+                                });
             })
+            ->with(['merchantSupplies','cityModel','quarter'])
             ->get();
 
         return view('couturier.merceries.index', compact('merceries', 'search'));
@@ -41,13 +51,22 @@ class MerchantController extends Controller
                 $q->where('id', '!=', auth()->id());
             })
             ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('city', 'like', "%{$search}%")
-                      ->orWhere('phone', 'like', "%{$search}%");
-                });
+                                $query->where(function ($q) use ($search) {
+                                        $q->where('name', 'like', "%{$search}%")
+                                            ->orWhere('phone', 'like', "%{$search}%");
+
+                    // Search by related city name
+                    $q->orWhereHas('cityModel', function ($qc) use ($search) {
+                        $qc->where('name', 'like', "%{$search}%");
+                    });
+
+                    // Search by related quarter name
+                    $q->orWhereHas('quarter', function ($qq) use ($search) {
+                        $qq->where('name', 'like', "%{$search}%");
+                    });
+                                });
             })
-            ->with('merchantSupplies')
+            ->with(['merchantSupplies','cityModel','quarter'])
             ->get();
 
         return view('landing', compact('merceries', 'search'));
@@ -68,12 +87,21 @@ class MerchantController extends Controller
             ->when($query, function ($q) use ($query) {
                 $q->where(function ($sub) use ($query) {
                     $sub->where('name', 'like', "%{$query}%")
-                        ->orWhere('email', 'like', "%{$query}%")
-                        ->orWhere('city', 'like', "%{$query}%")
-                        ->orWhere('phone', 'like', "%{$query}%");
+                            ->orWhere('email', 'like', "%{$query}%")
+                            ->orWhere('phone', 'like', "%{$query}%");
+
+                        // Search by related city name
+                        $sub->orWhereHas('cityModel', function ($qc) use ($query) {
+                            $qc->where('name', 'like', "%{$query}%");
+                        });
+
+                        // Search by related quarter name
+                        $sub->orWhereHas('quarter', function ($qq) use ($query) {
+                            $qq->where('name', 'like', "%{$query}%");
+                        });
                 });
             })
-            ->with('merchantSupplies')
+            ->with(['merchantSupplies','cityModel','quarter'])
             ->get();
 
         // Map response to include avatar_url and a short description
@@ -82,6 +110,7 @@ class MerchantController extends Controller
                 'id' => $m->id,
                 'name' => $m->name,
                 'city' => $m->city,
+                'quarter' => $m->quarter?->name ?? null,
                 'phone' => $m->phone,
                 'avatar_url' => $m->avatar_url ?? asset('images/defaults/mercerie-avatar.png'),
                 'description' => $m->address ? 
@@ -105,29 +134,79 @@ class MerchantController extends Controller
 
     public function edit()
     {
-        $mercerie = auth()->user();
-        return view('merceries.profile.edit', compact('mercerie'));
+        $user = auth()->user();
+        // Load cities and (optionally) quarters for the user's city to prepopulate selects
+        $cities = \App\Models\City::orderBy('name')->get();
+        $quarters = collect();
+        if (! empty($user->city_id)) {
+            $quarters = \App\Models\Quarter::where('city_id', $user->city_id)->orderBy('name')->get();
+        }
+
+        // Serve role-specific edit view if exists, else fall back to a generic profile edit
+        if ($user->isMercerie()) {
+            return view('merceries.profile.edit', ['mercerie' => $user, 'cities' => $cities, 'quarters' => $quarters]);
+        }
+
+        // Couturier view
+        return view('couturier.profile.edit', ['user' => $user, 'cities' => $cities, 'quarters' => $quarters]);
     }
 
     public function updateProfile(Request $request)
     {
         $user = $request->user();
 
-        $data = $request->validate([
-            'city' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:500',
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        ]);
+        // Role-specific validation: merceries must provide city/quarter; couturiers may not
+        if ($user->isMercerie()) {
+            $rules = [
+                'city_id' => 'required|exists:cities,id',
+                'quarter_id' => 'required|exists:quarters,id',
+                'phone' => 'nullable|string|max:20',
+                'address' => 'nullable|string|max:500',
+                'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ];
+        } else {
+            // Couturier or other roles
+            $rules = [
+                'name' => 'required|string|max:255',
+                'city_id' => 'nullable|exists:cities,id',
+                'quarter_id' => 'nullable|exists:quarters,id',
+                'phone' => 'nullable|string|max:20',
+                'address' => 'nullable|string|max:500',
+                'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ];
+        }
+
+        $data = $request->validate($rules);
+
+        // If merchant provided both city and quarter, ensure relation integrity
+        if ($user->isMercerie() && !empty($data['city_id']) && !empty($data['quarter_id'])) {
+            $belongs = \App\Models\Quarter::where('id', $data['quarter_id'])->where('city_id', $data['city_id'])->exists();
+            if (! $belongs) {
+                return redirect()->back()->withInput()->with('error', 'Le quartier sélectionné n\'appartient pas à la ville choisie.');
+            }
+        }
 
         if ($request->hasFile('avatar')) {
             $path = $request->file('avatar')->store('avatars', 'public');
             $data['avatar'] = $path;
         }
 
-        $user->update($data);
+        // Map city_id/quarter_id to user's columns
+        $user->city_id = $data['city_id'] ?? null;
+        $user->quarter_id = $data['quarter_id'] ?? null;
+        $user->phone = $data['phone'] ?? $user->phone;
+        $user->address = $data['address'] ?? $user->address;
+        if (isset($data['avatar'])) {
+            $user->avatar = $data['avatar'];
+        }
+        $user->save();
 
-        return redirect()->route('merchant.supplies.index')->with('success', 'Profil complété avec succès.');
+        // Redirect depending on role
+        if ($user->isMercerie()) {
+            return redirect()->route('merchant.supplies.index')->with('success', 'Profil complété avec succès.');
+        }
+
+        return redirect()->route('supplies.selection')->with('success', 'Profil mis à jour avec succès.');
     }
 
 }

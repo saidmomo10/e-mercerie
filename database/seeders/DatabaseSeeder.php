@@ -23,11 +23,13 @@ class DatabaseSeeder extends Seeder
             SuperAdminSeeder::class,
             SuppliesSeeder::class,
             UserSeeder::class,
+            \Database\Seeders\CitySeeder::class,
         ]);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // Ensure test user exists without duplicating
+        \App\Models\User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            ['name' => 'Test User', 'password' => bcrypt('password')]
+        );
     }
 }

@@ -34,7 +34,7 @@
                         </h5>
 
                         <div class="card-info">
-                            <p><i class="bi bi-geo-alt-fill me-2"></i>{{ $mercerie->city ?? 'Ville non spécifiée' }}</p>
+                            <p><i class="bi bi-geo-alt-fill me-2"></i>{{ $mercerie->city ?? 'Ville non spécifiée' }}@if($mercerie->quarter) — {{ $mercerie->quarter->name ?? $mercerie->quarter }}@endif</p>
                             <p><i class="bi bi-telephone-fill me-2"></i>{{ $mercerie->phone ?? 'Non renseigné' }}</p>
                         </div>
 
@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <i class="bi bi-shop me-2 text-secondary"></i>${mercerie.name}
                             </h5>
                             <div class="card-info">
-                                <p><i class="bi bi-geo-alt-fill me-2"></i>${mercerie.city ?? 'Ville non spécifiée'}</p>
+                                <p><i class="bi bi-geo-alt-fill me-2"></i>${mercerie.city ?? 'Ville non spécifiée'}${mercerie.quarter ? ' — ' + mercerie.quarter : ''}</p>
                                 <p><i class="bi bi-telephone-fill me-2"></i>${mercerie.phone ?? 'Non renseigné'}</p>
                             </div>
                             <a href="/couturier/merceries/${mercerie.id}" class="soft-btn purple">

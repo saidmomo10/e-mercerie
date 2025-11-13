@@ -20,7 +20,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'phone',
         'address',
         'avatar',
-        'city',
+        'city_id',
+        'quarter_id',
     ];
 
     protected $hidden = ['password'];
@@ -46,6 +47,28 @@ class User extends Authenticatable implements MustVerifyEmail
     public function merchantSupplies()
     {
         return $this->hasMany(MerchantSupply::class, 'user_id');
+    }
+
+    public function cityModel()
+    {
+        return $this->belongsTo(City::class, 'city_id');
+    }
+
+    public function quarter()
+    {
+        return $this->belongsTo(Quarter::class, 'quarter_id');
+    }
+
+    /**
+     * Backwards-compatible accessor: return city name from relation if present, else fallback to raw city column
+     */
+    public function getCityAttribute($value)
+    {
+        // Prefer related city name when available
+        if ($this->city_id) {
+            return $this->cityModel?->name ?? $value;
+        }
+        return $value;
     }
 
     public function ordersAsCouturier()

@@ -48,8 +48,29 @@
                         </span>
                     </div>
 
-                    @if(auth()->user()->isCouturier())
-                        <p class="merchant-name">Mercerie : {{ $order->mercerie->name }}</p>
+                    {{-- Afficher les infos de l'autre partie (pour le couturier => mercerie, pour la mercerie => couturier) --}}
+                    @php
+                        $viewer = auth()->user();
+                        $other = $viewer->isCouturier() ? $order->mercerie : $order->couturier;
+                    @endphp
+
+                    @if($other)
+                        <div class="other-info d-flex gap-3 align-items-start mb-3" style="border:1px solid var(--border-color); padding:0.75rem; border-radius:12px;">
+                            <img src="{{ $other->avatar_url }}" alt="avatar" width="64" class="rounded-circle">
+                            <div>
+                                <div class="fw-bold">{{ $other->name }}</div>
+                                <div class="text-muted small">{{ $other->email }}</div>
+                                @if($other->phone)
+                                    <div class="small"><i class="fa-solid fa-phone"></i> {{ $other->phone }}</div>
+                                @endif
+                                @if($other->city || $other->city_id)
+                                    <div class="small"><i class="fa-solid fa-location-dot"></i> {{ $other->city }}{{ $other->quarter ? ' — ' . $other->quarter->name : '' }}</div>
+                                @endif
+                                <!-- @if($other->address)
+                                    <div class="small">🏠 {{ Str::limit($other->address, 80) }}</div>
+                                @endif -->
+                            </div>
+                        </div>
                     @endif
 
                     @if(auth()->user()->isMercerie() && $order->status === 'pending')

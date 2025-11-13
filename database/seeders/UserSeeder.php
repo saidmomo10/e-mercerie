@@ -10,25 +10,19 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::create([
-            'name' => 'Super Admin',
-            'email' => 'admin@emercerie.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'admin@emercerie.com'],
+            ['name' => 'Super Admin', 'password' => Hash::make('password'), 'role' => 'admin']
+        );
 
-        User::create([
-            'name' => 'Mercerie Belle Couture',
-            'email' => 'belle@emercerie.com',
-            'password' => Hash::make('password'),
-            'role' => 'mercerie',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'belle@emercerie.com'],
+            ['name' => 'Mercerie Belle Couture', 'password' => Hash::make('password'), 'role' => 'mercerie']
+        );
 
-        User::create([
-            'name' => 'Couturier Alain',
-            'email' => 'alain@emercerie.com',
-            'password' => Hash::make('password'),
-            'role' => 'couturier',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'alain@emercerie.com'],
+            ['name' => 'Couturier Alain', 'password' => Hash::make('password'), 'role' => 'couturier']
+        );
     }
 }

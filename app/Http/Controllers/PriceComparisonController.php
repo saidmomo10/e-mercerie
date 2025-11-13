@@ -10,14 +10,27 @@ class PriceComparisonController extends Controller
     // Étape 3 : Comparaison des merceries pour Blade
     public function compare(Request $request)
     {
+        // Validate optional location filters
+        $data = $request->validate([
+            'city_id' => 'nullable|exists:cities,id',
+            'quarter_id' => 'nullable|exists:quarters,id',
+        ]);
+
+        // If both provided, ensure the quarter belongs to the city
+        if (!empty($data['city_id']) && !empty($data['quarter_id'])) {
+            $belongs = \App\Models\Quarter::where('id', $data['quarter_id'])->where('city_id', $data['city_id'])->exists();
+            if (! $belongs) {
+                return redirect()->back()->with('error', 'Le quartier sélectionné n\'appartient pas à la ville choisie.');
+            }
+        }
         $itemsInput = $request->input('items', []);
         $items = [];
 
-        foreach ($itemsInput as $supplyId => $data) {
-            if (isset($data['quantity']) && $data['quantity'] > 0) {
+        foreach ($itemsInput as $supplyId => $itemData) {
+            if (isset($itemData['quantity']) && $itemData['quantity'] > 0) {
                 $items[] = [
                     'supply_id' => $supplyId,
-                    'quantity' => $data['quantity']
+                    'quantity' => $itemData['quantity']
                 ];
             }
         }
@@ -27,7 +40,17 @@ class PriceComparisonController extends Controller
         }
 
         // Charger les merceries avec leurs fournitures et les infos de la fourniture liée
-        $merceries = User::where('role', 'mercerie')->with('merchantSupplies.supply')->get();
+        $merceriesQuery = User::where('role', 'mercerie')->with('merchantSupplies.supply');
+
+        // Apply optional filters
+        if (!empty($data['city_id'])) {
+            $merceriesQuery->where('city_id', $data['city_id']);
+        }
+        if (!empty($data['quarter_id'])) {
+            $merceriesQuery->where('quarter_id', $data['quarter_id']);
+        }
+
+        $merceries = $merceriesQuery->get();
         $disponibles = [];
         $non_disponibles = [];
 
@@ -67,30 +90,35 @@ class PriceComparisonController extends Controller
                 ];
             }
 
+            $mercerieInfo = [
+                'id' => $mercerie->id,
+                'name' => $mercerie->name,
+                'city_name' => $mercerie->cityModel?->name ?? null,
+                'quarter_name' => $mercerie->quarter?->name ?? null,
+            ];
+
             if ($peut_fournir) {
                 $disponibles[] = [
-                    'mercerie' => [
-                        'id' => $mercerie->id,
-                        'name' => $mercerie->name,
-                    ],
+                    'mercerie' => $mercerieInfo,
                     'total_estime' => $total,
                     'details' => $details,
                 ];
             } else {
                 $non_disponibles[] = [
-                    'mercerie' => [
-                        'id' => $mercerie->id,
-                        'name' => $mercerie->name,
-                    ],
+                    'mercerie' => $mercerieInfo,
                     'raisons' => $raisons
                 ];
             }
         }
 
-        // Trier les merceries disponibles par prix total estimé croissant
-        usort($disponibles, fn($a, $b) => $a['total_estime'] <=> $b['total_estime']);
+    // Trier les merceries disponibles par prix total estimé croissant
+    usort($disponibles, fn($a, $b) => $a['total_estime'] <=> $b['total_estime']);
 
-        return view('merceries.compare', compact('disponibles', 'non_disponibles', 'items'));
+    // Attach selected city/quarter (models) for the view to display
+    $selectedCity = !empty($data['city_id']) ? \App\Models\City::find($data['city_id']) : null;
+    $selectedQuarter = !empty($data['quarter_id']) ? \App\Models\Quarter::find($data['quarter_id']) : null;
+
+    return view('merceries.compare', compact('disponibles', 'non_disponibles', 'items', 'selectedCity', 'selectedQuarter'));
     }
 
 }

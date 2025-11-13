@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- CSRF token + WebPush public key for client-side subscription -->
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="webpush-public-key" content="{{ config('webpush.vapid.public') ?? config('services.webpush.public') }}">
 <title>Liste des Merceries – Prodmast</title>
 <style>
 /* === FONT & RESET === */
@@ -66,6 +69,105 @@ header.scrolled .logo { color:var(--main-color); }
 }
 .btn-signin:hover { background:var(--accent-color); transform:translateY(-2px); }
 
+/* === DROPDOWN MODERN STYLE === */
+.profile-box {
+  position: relative;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  min-width: 220px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15);
+  z-index: 200;
+  padding: 10px 0;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+}
+
+.dropdown-menu.show {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.dropdown-menu .divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #eee, transparent);
+  margin: 8px 0;
+}
+
+.dropdown-menu a,
+.dropdown-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  color: #333;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.25s ease;
+  background: transparent;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+}
+
+.dropdown-menu a i,
+.dropdown-menu button i {
+  color: var(--accent-color);
+  font-size: 1rem;
+}
+
+.dropdown-menu a:hover,
+.dropdown-menu button:hover {
+  background: #f9f4ff;
+  color: var(--accent-color);
+}
+
+/* Header adaptation on scroll (dropdown contrast) */
+header.scrolled .dropdown-menu {
+  background: #fff;
+}
+
+/* User info block inside dropdown */
+.dropdown-menu .author-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #faf8fc;
+  border-radius: 8px;
+  margin: 0 10px 8px;
+}
+
+.dropdown-menu .author-info img {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.dropdown-menu .author-info h4 {
+  font-size: 0.95rem;
+  color: #222;
+  margin: 0;
+}
+
+.dropdown-menu .author-info a {
+  font-size: 0.8rem;
+  color: #777;
+  text-decoration: none;
+}
+
+
 /* === HERO === */
 .hero {
   height:60vh;
@@ -88,7 +190,7 @@ header.scrolled .logo { color:var(--main-color); }
 
 .hero-buttons { margin-top: 20px; display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
 .btn { border: none; cursor: pointer; font-weight: 600; border-radius: 30px; padding: 12px 28px; transition: var(--transition); }
-.btn-primary { background: var(--text-light); color: var(--main-color); }
+.btn-primary { background: var(--text-light); color: var(--main-color); text-decoration: none; }
 .btn-primary:hover { background: var(--accent-color); color: var(--text-light); transform: translateY(-3px); }
 .btn-outline { background: transparent; color: var(--text-light); border: 2px solid var(--text-light); }
 .btn-outline:hover { background: var(--text-light); color: var(--main-color); transform: translateY(-3px); }
@@ -211,7 +313,58 @@ footer {
   @if(!Auth::check())
     <a href="{{ route('login.form') }}" class="btn-signin">Se connecter</a>
   @else
-    <a href="#" class="btn-signin">Tableau de bord</a>
+    @php $user = auth()->user(); @endphp
+    <div class="profile-box" style="margin-left:12px;">
+      <button class="dropdown-toggle bg-transparent border-0 btn-signin" type="button" id="profile"
+        data-bs-toggle="dropdown" aria-expanded="false">
+        <div class="profile-info" style="display:flex;align-items:center;gap:10px;">
+          <div class="image">
+            <img src="{{ $user->avatar_url ?? asset('images/placeholder-60.png') }}" alt="Avatar" class="rounded-circle" width="36" style="object-fit:cover;">
+          </div>
+          <div class="d-none d-md-block" style="text-align:left;">
+            <div style="font-weight:600;font-size:0.95rem;color:var(--text-light);">{{ $user->name }}</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.85);">{{ $user->email }}</div>
+          </div>
+        </div>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profile" style="min-width:200px;">
+        <li>
+          <div class="author-info" style="display:flex;align-items:center;padding:8px;">
+            <div class="image">
+              <img src="{{ $user->avatar_url ?? asset('images/placeholder-60.png') }}" alt="image" style="width:48px;height:48px;object-fit:cover;border-radius:6px;">
+            </div>
+            <div class="content" style="margin-left:8px;">
+              <h4 style="margin:0;font-size:0.95rem;">{{ $user->name }}</h4>
+              <a href="#" style="font-size:0.8rem;color:#666;">{{ $user->email }}</a>
+            </div>
+          </div>
+        </li>
+        <li class="divider"></li>
+        <li>
+          <a href="{{ route('merceries.profile.edit') }}" class="dropdown-item">
+            <i class="fa-solid fa-user"></i> Mon Profile
+          </a>
+        </li>
+        <li>
+          @if(auth()->user()->isCouturier())
+          <a href="{{ route('merceries.index') }}" class="dropdown-item">
+            <i class="fa-solid fa-gauge"></i> Tableau de bord
+          </a>
+          @elseif(auth()->user()->isMercerie())
+          <a href="{{ route('orders.index') }}" class="dropdown-item">
+            <i class="fa-solid fa-gauge"></i> Tableau de bord
+          </a>
+          @endif
+        </li>
+        <li class="divider"></li>
+        <li style="padding:8px;">
+          <form action="{{ route('logout') }}" method="POST" class="logout-form">
+            @csrf
+            <button type="submit" class="bg-transparent border-0" style="width:100%;text-align:left;padding:6px 8px;">Déconnexion</button>
+          </form>
+        </li>
+      </ul>
+    </div>
   @endif
 </header>
 
@@ -219,8 +372,14 @@ footer {
     <h1>Trouvez votre mercerie idéale</h1>
     <p>Découvrez les meilleures merceries de votre région et leurs produits uniques.</p>
     <div class="hero-buttons">
-        <button class="btn btn-primary">Get Started</button>
-        <button class="btn btn-outline">Try Demo</button>
+      @if(auth()->user()->isMercerie())
+        <a href="{{ route('merchant.supplies.index') }}" class="btn btn-primary">Ajouter une fourniture</a>
+      @elseif(auth()->user()->isCouturier())
+        <a href="{{ route('supplies.selection') }}" class="btn btn-primary">Comparer les prix</a>
+      @else
+        <a href="#" class="btn btn-primary">Démarrer</a>
+      @endif
+        <!-- <button class="btn btn-outline">Try Demo</button> -->
     </div>
 </section>
  
@@ -244,10 +403,10 @@ footer {
         <img src="{{ $m->avatar_url ? asset($m->avatar_url) : 'https://via.placeholder.com/600x300?text=Mercerie' }}" alt="{{ $m->name }}">
         <div class="card-content">
           <h3>{{ $m->name }}</h3>
-          <p>{{ $m->address ? (strlen($m->address) > 120 ? substr($m->address,0,117).'...' : $m->address) : 'Aucune description fournie.' }}</p>
+          <!-- <p>{{ $m->address ? (strlen($m->address) > 120 ? substr($m->address,0,117).'...' : $m->address) : 'Aucune description fournie.' }}</p> -->
           <div class="info">
-            <div class="location">📍 {{ $m->city ?? '—' }}</div>
-            <div class="rating">⭐ {{ number_format($m->rating ?? 4.5, 1) }}</div>
+            <div class="location">📍 {{ $m->city }}@if(isset($m->quarter) && $m->quarter) — {{ $m->quarter->name ?? $m->quarter }}@endif</div>
+            <!-- <div class="rating">⭐ {{ number_format($m->rating ?? 4.5, 1) }}</div> -->
           </div>
           <a href="{{ route('merceries.show',$m->id) }}" class="btn">Voir plus</a>
         </div>
@@ -300,7 +459,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <h3>${escapeHtml(m.name)}</h3>
             <p>${escapeHtml(m.description || 'Aucune description fournie.')}</p>
             <div class="info">
-              <div class="location">📍 ${escapeHtml(m.city || '—')}</div>
+              <div class="location">📍 ${escapeHtml(m.city || '—')}${m.quarter ? ' — ' + escapeHtml(m.quarter) : ''}</div>
               <div class="rating">⭐ ${Number(m.rating || 4.5).toFixed(1)}</div>
             </div>
             <a href="${rootUrl}/couturier/merceries/${m.id}" class="btn">Voir plus</a>
@@ -339,6 +498,89 @@ document.addEventListener('DOMContentLoaded', function () {
         .finally(() => loader.style.display = 'none');
     }, 300);
   });
+});
+</script>
+
+<script>
+// Dropdown fallback: if Bootstrap's dropdown isn't available, toggle manually
+document.addEventListener('DOMContentLoaded', function () {
+  const profileBtn = document.getElementById('profile');
+  if (!profileBtn) return;
+  const menu = profileBtn.closest('.profile-box').querySelector('.dropdown-menu');
+  // If Bootstrap provides dropdown via data-bs-toggle, it will handle it. Only add fallback if not.
+  let bootstrapAvailable = false;
+  try { bootstrapAvailable = typeof bootstrap !== 'undefined' && typeof bootstrap.Dropdown !== 'undefined'; } catch (e) { bootstrapAvailable = false; }
+  if (bootstrapAvailable) return;
+
+  profileBtn.addEventListener('click', function (e) {
+    e.preventDefault();
+    menu.classList.toggle('show');
+  });
+  // close when clicking outside
+  document.addEventListener('click', function (e) {
+    if (!profileBtn.contains(e.target) && !menu.contains(e.target)) {
+      menu.classList.remove('show');
+    }
+  });
+});
+</script>
+
+<!-- Service Worker + Web Push subscription initializer (runs on landing to ensure user receives push) -->
+<script>
+document.addEventListener('DOMContentLoaded', async function () {
+  // Only attempt if browser supports service workers and push
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+
+  // Only subscribe when user is authenticated (server-side check via Blade)
+  @if(Auth::check())
+  try {
+    // Register service worker if not already
+    const sw = await navigator.serviceWorker.register('/sw.js').catch(e => { console.debug('SW register failed', e); return null; });
+    if (!sw) return;
+
+    // get existing subscription
+    const reg = await navigator.serviceWorker.getRegistration();
+    const existing = await reg.pushManager.getSubscription();
+    if (existing) return; // already subscribed
+
+    // Get public VAPID key from meta
+    const vapidMeta = document.querySelector('meta[name="webpush-public-key"]');
+    const vapidKey = vapidMeta ? vapidMeta.getAttribute('content') : null;
+    if (!vapidKey) { console.warn('No VAPID public key found'); return; }
+
+    // Convert base64 public key to Uint8Array
+    function urlBase64ToUint8Array(base64String) {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+      return outputArray;
+    }
+
+    const subscription = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(vapidKey)
+    });
+
+    // Send subscription to server to store it
+  await fetch('{{ route('push.subscribe') }}', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      },
+      body: JSON.stringify({ subscription })
+    });
+
+    console.info('Push subscription registered');
+  } catch (err) {
+    console.warn('Push subscription failed', err);
+  }
+  @endif
 });
 </script>
 </body>

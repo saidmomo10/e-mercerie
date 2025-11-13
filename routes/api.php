@@ -45,3 +45,8 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/price-comparison', [PriceComparisonController::class, 'compare']);
 });
+
+// Public endpoint to fetch quarters for a city (used by the profile form)
+Route::get('/cities/{city}/quarters', function (\App\Models\City $city) {
+    return response()->json($city->quarters()->select('id','name')->orderBy('name')->get());
+});

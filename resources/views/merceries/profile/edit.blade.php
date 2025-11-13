@@ -20,7 +20,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('merceries.profile.update') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
@@ -55,14 +55,30 @@
                             @enderror
                         </div>
 
-                        {{-- Ville --}}
-                        <div class="mb-3">
-                            <label for="city" class="form-label fw-semibold">Ville</label>
-                            <input type="text" id="city" name="city" 
-                                   class="form-control @error('city') is-invalid @enderror"
-                                   value="{{ old('city', $mercerie->city ?? '') }}" 
-                                   placeholder="Entrez votre ville" required>
-                            @error('city')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        {{-- Ville et Quartier (select) --}}
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                <label for="city_id" class="form-label fw-semibold">Ville</label>
+                                <select id="city_id" name="city_id" class="form-select @error('city_id') is-invalid @enderror" required>
+                                    <option value="">Sélectionnez une ville...</option>
+                                    @foreach(
+                                        // Assumes a City model exists and contains seeded villes
+                                        \App\Models\City::orderBy('name')->get() as $city
+                                    )
+                                        <option value="{{ $city->id }}" {{ (old('city_id', $mercerie->city_id ?? '') == $city->id) ? 'selected' : '' }}>{{ $city->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('city_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+
+                            <div class="mb-3 col-md-6">
+                                <label for="quarter_id" class="form-label fw-semibold">Quartier</label>
+                                <select id="quarter_id" name="quarter_id" class="form-select @error('quarter_id') is-invalid @enderror" required>
+                                    <option value="">Sélectionnez d'abord une ville</option>
+                                    {{-- Options will be loaded dynamically via JS. If there's an existing value, we'll load it on DOMContentLoaded --}}
+                                </select>
+                                @error('quarter_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
                         </div>
 
                         {{-- Téléphone --}}
@@ -75,12 +91,12 @@
                             @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
-                        {{-- Adresse --}}
+                        {{-- Adresse complète (libre) --}}
                         <div class="mb-3">
-                            <label for="address" class="form-label fw-semibold">Adresse</label>
-                            <textarea id="address" name="address" 
+                            <label for="address" class="form-label fw-semibold">Adresse complète</label>
+                            <textarea id="address" name="address"
                                       class="form-control @error('address') is-invalid @enderror"
-                                      rows="3" placeholder="Entrez votre adresse complète" required>{{ old('address', $mercerie->address ?? '') }}</textarea>
+                                      rows="3" placeholder="Entrez votre adresse complète (rue, numero, etc.)" required>{{ old('address', $mercerie->address ?? '') }}</textarea>
                             @error('address')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
@@ -114,6 +130,70 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const citySelect = document.getElementById('city_id');
+        const quarterSelect = document.getElementById('quarter_id');
+        const selectedQuarterId = '{{ old('quarter_id', $mercerie->quarter_id ?? '') }}';
+
+        if (!citySelect || !quarterSelect) {
+            console.warn('city_id or quarter_id select not found');
+            return;
+        }
+
+        async function loadQuarters(cityId, preselectId = null) {
+            quarterSelect.disabled = true;
+            quarterSelect.innerHTML = '<option>Chargement...</option>';
+            if (!cityId) {
+                quarterSelect.disabled = false;
+                quarterSelect.innerHTML = '<option value="">Sélectionnez d\'abord une ville</option>';
+                return;
+            }
+
+            const encodedId = encodeURIComponent(cityId);
+            const url = "{{ rtrim(url('/api/cities'), '/') }}" + '/' + encodedId + '/quarters';
+            console.debug('Loading quarters from', url);
+
+            try {
+                const res = await fetch(url, { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' });
+                if (!res.ok) throw new Error('Network: ' + res.status);
+                const data = await res.json();
+                if (!Array.isArray(data) || data.length === 0) {
+                    quarterSelect.innerHTML = '<option value="">Aucun quartier disponible</option>';
+                    quarterSelect.disabled = false;
+                    return;
+                }
+
+                quarterSelect.innerHTML = '<option value="">Sélectionnez un quartier...</option>';
+                data.forEach(q => {
+                    const opt = document.createElement('option');
+                    opt.value = q.id;
+                    opt.textContent = q.name;
+                    if (preselectId && String(preselectId) === String(q.id)) opt.selected = true;
+                    quarterSelect.appendChild(opt);
+                });
+                quarterSelect.disabled = false;
+            } catch (e) {
+                quarterSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                quarterSelect.disabled = false;
+                console.error('Failed to load quarters', e);
+            }
+        }
+
+        // attach change handler robustly
+        citySelect.addEventListener('change', function () {
+            const val = this.value;
+            // clear previous selection
+            quarterSelect.innerHTML = '';
+            loadQuarters(val);
+        });
+
+        // Preload if editing existing mercerie
+        if (citySelect.value) {
+            loadQuarters(citySelect.value, selectedQuarterId);
+        }
+    });
+    </script>
 @endpush
 
 @endsection

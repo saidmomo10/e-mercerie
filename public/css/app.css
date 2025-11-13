@@ -2966,14 +2966,15 @@ h6,
 .header .header-right .profile-box .profile-info .info .image {
   border: 1px solid #DFE5EF;
   width: 46px;
-  height: 46px;
+  height: auto;
+  object-fit: cover;
   border-radius: 50%;
   margin-right: 14px;
   position: relative;
 }
 .header .header-right .profile-box .profile-info .info .image img {
   width: 100%;
-  border-radius: 50%;
+  border-radius: 100%;
 }
 .header .header-right .profile-box .profile-info .info p {
   font-size: 12px;
