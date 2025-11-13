@@ -11,9 +11,9 @@ class CitySeeder extends Seeder
     {
         $cities = [
             'Cotonou' => ['Akpakpa','Haie Vive','Zongo','Gbedjromede'],
-            'Porto-Novo' => ['Aflagbeto','Adjohoun','Gbegamey'],
-            'Abomey-Calavi' => ['Godomey','Kpanroun','Hêvié'],
-            'Parakou' => ['Gare','Cité','Djougou'],
+            'Porto-Novo' => ['Aflagbeto','Adjohoun'],
+            'Abomey-Calavi' => ['Godomey','Zoundja','Hêvié'],
+            'Parakou' => ['Madina','Banikanni','Guema'],
         ];
 
         foreach ($cities as $name => $quarters) {

@@ -379,7 +379,7 @@ footer {
           <a href="{{ route('supplies.selection') }}" class="btn btn-primary">Comparer les prix</a>
         @endif
       @else
-        <a href="#" class="btn btn-primary">Démarrer</a>
+        <a href="{{ route('login.form') }}" class="btn btn-primary">Démarrer</a>
       @endauth
         <!-- <button class="btn btn-outline">Try Demo</button> -->
     </div>

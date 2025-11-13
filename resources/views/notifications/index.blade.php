@@ -152,13 +152,15 @@
     <h1><i class="fa-solid fa-bell me-2"></i> Mes Notifications</h2>
   </div>
 
-    <form action="{{ route('notifications.clearAll') }}" method="POST" class="d-inline">
-        @csrf
-        @method('DELETE')
-        <button type="button" id="clear-all-btn" class="btn btn-outline-danger mb-4">
-        <i class="fa-solid fa-trash"></i> Tout supprimer
-        </button>
-    </form>
+  @if($notifications->isNotEmpty())
+  <form action="{{ route('notifications.clearAll') }}" method="POST" class="d-inline">
+    @csrf
+    @method('DELETE')
+    <button type="button" id="clear-all-btn" class="btn btn-outline-danger mb-4">
+    <i class="fa-solid fa-trash"></i> Tout supprimer
+    </button>
+  </form>
+  @endif
 
   <!-- === Liste des notifications === -->
   <div class="card-style">
