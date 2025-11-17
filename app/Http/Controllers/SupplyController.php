@@ -10,30 +10,30 @@ class SupplyController extends Controller
     // Recherche AJAX (live)
     public function searchAjax(Request $request)
     {
-        // Compatibilité: search, query, q
-        $query = $request->input('search')
-            ?? $request->input('query')
-            ?? $request->input('q');
+        $query = strtolower(
+            $request->input('search') 
+            ?? $request->input('query') 
+            ?? $request->input('q')
+        );
 
         $supplies = Supply::when($query, function ($q) use ($query) {
-                $q->where('name', 'like', "%{$query}%")
-                ->orWhere('description', 'like', "%{$query}%");
-            })
-            ->limit(20) // évite surcharge en production
-            ->get();
+            $q->whereRaw("LOWER(name) LIKE ?", ["%{$query}%"])
+            ->orWhereRaw("LOWER(description) LIKE ?", ["%{$query}%"]);
+        })
+        ->limit(20)
+        ->get();
 
-        $payload = $supplies->map(function ($s) {
-            return [
+        return response()->json(
+            $supplies->map(fn($s) => [
                 'id' => $s->id,
                 'name' => $s->name,
                 'description' => $s->description,
                 'price' => $s->price,
-                'image_url' => $s->image_url,   // important !
-            ];
-        });
-
-        return response()->json($payload);
+                'image_url' => $s->image_url,
+            ])
+        );
     }
+
 
     // Étape 1 : Liste des fournitures
     public function index()
