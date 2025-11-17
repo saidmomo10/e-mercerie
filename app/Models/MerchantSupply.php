@@ -13,7 +13,16 @@ class MerchantSupply extends Model
         'user_id',
         'supply_id',
         'price',
-        'stock_quantity'
+        'stock_quantity',
+        // 'measure' and 'sale_mode' are admin-only and should not be mass-assignable by merchants
+    ];
+
+    /**
+     * Cast numeric fields so decimals are preserved (stock_quantity may be fractional for measures)
+     */
+    protected $casts = [
+        'price' => 'decimal:2',
+        'stock_quantity' => 'decimal:3',
     ];
 
     public function user()

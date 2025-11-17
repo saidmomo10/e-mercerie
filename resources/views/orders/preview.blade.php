@@ -136,15 +136,29 @@
                     <tr>
                         <th>Fourniture</th>
                         <th>Quantité</th>
+                        <th>Mesure demandée</th>
                         <th>Prix Unitaire</th>
                         <th>Sous-total</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($details as $item)
+                    @php
+                        // Normalize display: prefer explicit measure_requested for the measure column.
+                        // If measure_requested is empty but quantity contains letters (e.g. "2.5m"),
+                        // treat that quantity value as the measure and hide it from the quantity column.
+                        $qty = $item['quantity'] ?? null;
+                        $measure = $item['measure_requested'] ?? null;
+
+                        if (empty($measure) && is_string($qty) && preg_match('/[a-z]/i', $qty)) {
+                            $measure = $qty;
+                            $qty = null;
+                        }
+                    @endphp
                     <tr>
                         <td>{{ $item['supply'] }}</td>
-                        <td>{{ $item['quantity'] }}</td>
+                        <td>{{ $qty !== null ? $qty : '-' }}</td>
+                        <td>{{ $measure ?? '-' }}</td>
                         <td>{{ number_format($item['price'], 0, ',', ' ') }} FCFA</td>
                         <td>{{ number_format($item['subtotal'], 0, ',', ' ') }} FCFA</td>
                     </tr>
@@ -166,6 +180,7 @@
             @foreach($details as $index => $item)
                 <input type="hidden" name="items[{{ $index }}][merchant_supply_id]" value="{{ $item['merchant_supply_id'] ?? '' }}">
                 <input type="hidden" name="items[{{ $index }}][quantity]" value="{{ $item['quantity'] }}">
+                <input type="hidden" name="items[{{ $index }}][measure_requested]" value="{{ $item['measure_requested'] ?? '' }}">
             @endforeach
 
             <button type="button" id="confirmOrderBtn" class="btn btn-primary-custom px-4">Valider la commande</button>

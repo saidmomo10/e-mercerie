@@ -20,6 +20,20 @@
     </div>
 
     <div class="mb-3">
+        <label class="form-label">Mode de vente</label>
+        <select name="sale_mode" class="form-control">
+            <option value="quantity" @if(old('sale_mode', $supply->sale_mode ?? 'quantity') === 'quantity') selected @endif>Par quantité</option>
+            <option value="measure" @if(old('sale_mode', $supply->sale_mode ?? '') === 'measure') selected @endif>Par mesure</option>
+        </select>
+        <small class="form-text text-muted">Choisissez si cette fourniture est vendue par quantité ou par mesure.</small>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Mesure par défaut (ex: m, cm, lot)</label>
+        <input type="text" name="measure" class="form-control" value="{{ old('measure', $supply->measure ?? '') }}">
+    </div>
+
+    <div class="mb-3">
         <label class="form-label">Description</label>
         <textarea name="description" class="form-control" rows="4">{{ old('description', $supply->description ?? '') }}</textarea>
     </div>

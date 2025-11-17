@@ -14,6 +14,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+// Password show/hide toggles (works both on login and register pages)
+document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('.pw-toggle').forEach(btn=>{
+        btn.addEventListener('click', function(e){
+            const target = this.getAttribute('data-target');
+            if(!target) return;
+            const input = document.querySelector(target);
+            if(!input) return;
+            if(input.type === 'password'){
+                input.type = 'text';
+                this.textContent = 'Cacher';
+                this.setAttribute('aria-label','Cacher le mot de passe');
+            } else {
+                input.type = 'password';
+                this.textContent = 'Afficher';
+                this.setAttribute('aria-label','Afficher le mot de passe');
+            }
+        });
+    });
+});
+
 
 
 

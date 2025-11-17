@@ -16,69 +16,84 @@
                 </div>
         </div>
 
-                <!-- Formulaire -->
-                <form id="compare-form" class="supplies-form" action="{{ route('merceries.compare') }}" method="POST">
-                @csrf
+        <!-- Formulaire -->
+        <form id="compare-form" class="supplies-form" action="{{ route('merceries.compare') }}" method="POST">
+          @csrf
 
-                <button type="submit" class="soft-btn submit-btn mb-4">Comparer les merceries</button>
+          <button type="submit" class="soft-btn submit-btn mb-4">Comparer les merceries</button>
 
-                                <!-- Optional: filter by city / quarter -->
-                                <div style="display:flex;gap:12px;align-items:center;margin:12px 0;flex-wrap:wrap;">
-                                        <div>
-                                                <label for="city_id">Ville (optionnel)</label>
-                                                                        <select id="city_id" name="city_id">
-                                                                                <option value="">Toutes les villes</option>
-                                                                                @foreach(\App\Models\City::orderBy('name')->get() as $city)
-                                                                                        <option value="{{ $city->id }}" @if(old('city_id') == $city->id) selected @endif>{{ $city->name }}</option>
-                                                                                @endforeach
-                                                                        </select>
-                                        </div>
+                          <!-- Optional: filter by city / quarter -->
+                          <div style="display:flex;gap:12px;align-items:center;margin:12px 0;flex-wrap:wrap;">
+                                  <div>
+                                          <label for="city_id">Ville (optionnel)</label>
+                                                                  <select id="city_id" name="city_id">
+                                                                          <option value="">Toutes les villes</option>
+                                                                          @foreach(\App\Models\City::orderBy('name')->get() as $city)
+                                                                                  <option value="{{ $city->id }}" @if(old('city_id') == $city->id) selected @endif>{{ $city->name }}</option>
+                                                                          @endforeach
+                                                                  </select>
+                                  </div>
 
-                                        <div style="display:flex;align-items:center;gap:8px;">
-                                                <div>
-                                                    <label for="quarter_id">Quartier (optionnel)</label>
-                                                                                <select id="quarter_id" name="quarter_id" @if(!old('city_id')) disabled @endif>
-                                                                                        <option value="">Tous les quartiers</option>
-                                                                                        @if(old('city_id'))
-                                                                                                @foreach(\App\Models\Quarter::where('city_id', old('city_id'))->orderBy('name')->get() as $q)
-                                                                                                        <option value="{{ $q->id }}" @if(old('quarter_id') == $q->id) selected @endif>{{ $q->name }}</option>
-                                                                                                @endforeach
-                                                                                        @endif
-                                                                                </select>
-                                                </div>
-                                                <div id="quarter-loader" class="loader hidden" style="width:18px;height:18px;margin-top:18px;margin-left:6px;"></div>
-                                        </div>
-                                </div>
+                                  <div style="display:flex;align-items:center;gap:8px;">
+                                          <div>
+                                              <label for="quarter_id">Quartier (optionnel)</label>
+                                                                          <select id="quarter_id" name="quarter_id" @if(!old('city_id')) disabled @endif>
+                                                                                  <option value="">Tous les quartiers</option>
+                                                                                  @if(old('city_id'))
+                                                                                          @foreach(\App\Models\Quarter::where('city_id', old('city_id'))->orderBy('name')->get() as $q)
+                                                                                                  <option value="{{ $q->id }}" @if(old('quarter_id') == $q->id) selected @endif>{{ $q->name }}</option>
+                                                                                          @endforeach
+                                                                                  @endif
+                                                                          </select>
+                                          </div>
+                                          <div id="quarter-loader" class="loader hidden" style="width:18px;height:18px;margin-top:18px;margin-left:6px;"></div>
+                                  </div>
+                          </div>
 
-                <div class="supplies-list" id="supplies-list">
-                        @forelse($supplies as $supply)
-                                <div class="supply-card" data-id="{{ $supply->id }}">
-                                        <div class="supply-image">
-                                                <img src="{{ $supply->image_url ?? asset('images/default.png') }}" alt="{{ $supply->name }}">
-                                        </div>
+          <div class="supplies-list" id="supplies-list">
+                  @forelse($supplies as $supply)
+                          <div class="supply-card" data-id="{{ $supply->id }}">
+                                  <div class="supply-image">
+                                          <img src="{{ $supply->image_url ?? asset('images/default.png') }}" alt="{{ $supply->name }}">
+                                  </div>
 
-                                        <div class="supply-content">
-                                                <h3>{{ $supply->name }}</h3>
-                                                <p class="description">{{ $supply->description }}</p>
+                                  <div class="supply-content">
+                                          <h3>{{ $supply->name }}</h3>
+                                          <p class="description">{{ $supply->description }}</p>
 
-                                                <div class="price-qty">
-                                                        <div class="price">
-                                                                <!-- <span class="amount">$09.00</span>
-                                                                <span class="label">Neuf seulement</span> -->
-                                                        </div>
-                                                        <div class="quantity-group">
-                                                                <label for="quantity_{{ $supply->id }}">Qté</label>
-                                                                <input type="number" min="0" name="items[{{ $supply->id }}][quantity]" id="quantity_{{ $supply->id }}" value="0" />
-                                                        </div>
-                                                </div>
-                                        </div>
-                                </div>
-                        @empty
-                                <p class="empty-message">Aucune fourniture disponible pour le moment.</p>
-                        @endforelse
-                </div>
+            <div class="price-qty">
+              <div class="price">
+                <!-- <span class="amount">$09.00</span>
+                <span class="label">Neuf seulement</span> -->
+              </div>
+                                                  <div class="quantity-group">
+                                                        @php
+                                                            $isMeasure = false;
+                                                            // Admin-level sale_mode
+                                                            if (!empty($supply->sale_mode) && $supply->sale_mode === 'measure') {
+                                                                $isMeasure = true;
+                                                            }
+                                                            // Merchant-level override: if any merchant supplies sell by measure
+                                                            if (! $isMeasure) {
+                                                                $isMeasure = \App\Models\MerchantSupply::where('supply_id', $supply->id)->where('sale_mode', 'measure')->exists();
+                                                            }
+                                                        @endphp
 
-                
+                                                        @if($isMeasure)
+                                                          <label for="measure_{{ $supply->id }}">Mesure</label>
+                                                          <input type="text" name="items[{{ $supply->id }}][measure_requested]" id="measure_{{ $supply->id }}" placeholder="Ex: 2.5m ou 250cm" />
+                                                        @else
+                                                          <label for="quantity_{{ $supply->id }}">Qté</label>
+                                                          <input type="number" min="0" name="items[{{ $supply->id }}][quantity]" id="quantity_{{ $supply->id }}" value="0" />
+                                                        @endif
+                                                  </div>
+            </div>
+                                  </div>
+                          </div>
+                  @empty
+                          <p class="empty-message">Aucune fourniture disponible pour le moment.</p>
+                  @endforelse
+          </div>   
         </form>
         <!-- Loader de comparaison -->
         <div id="compare-loader" class="compare-loader hidden">

@@ -44,6 +44,12 @@ Route::post('/email/resend', [\App\Http\Controllers\AuthController::class, 'rese
 // Landing page dynamique: liste des merceries
 Route::get('/', [MerchantController::class, 'landing'])->name('landing');
 
+// Public AJAX search endpoints and comparison (allow guests to compare)
+Route::get('/api/merceries/search', [MerchantController::class, 'searchAjax'])->name('api.merceries.search');
+Route::get('/api/fournitures/search', [SupplyController::class, 'searchAjax'])->name('api.supplies.search');
+Route::post('/couturier/merceries/comparer', [PriceComparisonController::class, 'compare'])->name('merceries.compare');
+Route::get('/couturier/merceries/comparer', [PriceComparisonController::class, 'show'])->name('merceries.compare.show');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -62,8 +68,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/fournitures/selection', [SupplyController::class, 'selectionForm'])->name('supplies.selection');
         Route::get('/supplies/search', [SupplyController::class, 'search'])->name('supplies.search');
 
-        // Étape 3 : Comparaison des merceries
-        Route::post('/merceries/comparer', [PriceComparisonController::class, 'compare'])->name('merceries.compare');
+    // Étape 3 : Comparaison des merceries (public route defined at top)
 
         // Étape 4 : Création de la commande
         Route::post('/commande/creer', [OrderController::class, 'storeWeb'])->name('orders.store');
@@ -113,11 +118,10 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('couturier')->middleware('auth')->group(function () {
         Route::get('/merceries/{id}', [MerchantController::class, 'show'])->name('merceries.show');
-        Route::get('/api/merceries/search', [MerchantController::class, 'searchAjax'])->name('api.merceries.search');
+        // public API route for merceries search defined outside auth group
     });
 
-    // Recherche AJAX (live)
-    Route::get('/api/fournitures/search', [SupplyController::class, 'searchAjax'])->middleware('auth')->name('api.supplies.search');
+    // Recherche AJAX (live) - public route defined outside auth group
 
     // Admin routes for managing supplies
     Route::prefix('admin')->middleware('auth', 'role:admin')->name('admin.')->group(function () {

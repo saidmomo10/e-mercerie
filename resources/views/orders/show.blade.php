@@ -48,6 +48,7 @@
                     <tr>
                         <th>Fourniture</th>
                         <th>Quantité</th>
+                        <th>Mesure demandée</th>
                         <th>Prix Unitaire (FCFA)</th>
                         <th>Sous-total (FCFA)</th>
                         <th>Stock actuel</th>
@@ -58,6 +59,7 @@
                         <tr>
                             <td>{{ $item->merchantSupply->supply->name ?? $item->merchantSupply->name }}</td>
                             <td>{{ $item->quantity }}</td>
+                            <td>{{ $item->measure_requested ?? '-' }}</td>
                             <td>{{ number_format($item->price, 0, ',', ' ') }}</td>
                             <td class="highlight">{{ number_format($item->subtotal, 0, ',', ' ') }}</td>
                             <td>{{ $item->merchantSupply->stock_quantity }}</td>

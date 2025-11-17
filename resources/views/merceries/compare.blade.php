@@ -32,22 +32,39 @@
                         @foreach($mercerie['details'] as $detail)
                             <li>
                                 <span class="supply">{{ $detail['supply'] }}</span>
-                                <span class="quantity">{{ $detail['quantite'] }} × {{ number_format($detail['prix_unitaire'], 0, ',', ' ') }}</span>
+                                @if(!empty($detail['measure_requested']))
+                                    <span class="quantity">Mesure: <strong>{{ $detail['measure_requested'] }}</strong>
+                                        @if(!empty($detail['quantite'])) &times; {{ $detail['quantite'] }}@endif
+                                        — {{ number_format($detail['prix_unitaire'], 0, ',', ' ') }} FCFA
+                                    </span>
+                                @else
+                                    <span class="quantity">{{ $detail['quantite'] ?? '-' }} × {{ number_format($detail['prix_unitaire'], 0, ',', ' ') }}</span>
+                                @endif
                                 <span class="subtotal">{{ number_format($detail['sous_total'], 0, ',', ' ') }} FCFA</span>
                             </li>
                         @endforeach
                     </ul>
 
-                    <form action="{{ route('orders.storeFromMerchant', $mercerie['mercerie']['id']) }}" method="POST">
-                        @csrf
-                        @foreach($mercerie['details'] as $index => $detail)
-                            <input type="hidden" name="items[{{ $index }}][merchant_supply_id]" value="{{ $detail['merchant_supply_id'] }}">
-                            <input type="hidden" name="items[{{ $index }}][quantity]" value="{{ $detail['quantite'] }}">
-                        @endforeach
-                        <button type="submit" class="soft-btn purple">
-                            Valider cette mercerie
+                    @auth
+                        <form action="{{ route('orders.storeFromMerchant', $mercerie['mercerie']['id']) }}" method="POST">
+                            @csrf
+                            @foreach($mercerie['details'] as $index => $detail)
+                                <input type="hidden" name="items[{{ $index }}][merchant_supply_id]" value="{{ $detail['merchant_supply_id'] }}">
+                                @if(!empty($detail['measure_requested']))
+                                    <input type="hidden" name="items[{{ $index }}][measure_requested]" value="{{ $detail['measure_requested'] }}">
+                                @else
+                                    <input type="hidden" name="items[{{ $index }}][quantity]" value="{{ $detail['quantite'] }}">
+                                @endif
+                            @endforeach
+                            <button type="submit" class="soft-btn purple">
+                                Valider cette mercerie
+                            </button>
+                        </form>
+                    @else
+                        <button type="button" class="soft-btn purple require-login" data-return="{{ request()->fullUrl() }}">
+                            Se connecter pour commander
                         </button>
-                    </form>
+                    @endauth
                 </div>
             @empty
                 <p class="empty-text">Aucune mercerie disponible pour votre sélection.</p>
@@ -258,4 +275,15 @@
     margin-top: 2rem;
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.require-login').forEach(function(btn) {
+        btn.addEventListener('click', function () {
+            try { localStorage.setItem('post_login_return', this.dataset.return || window.location.href); } catch (e) { /* ignore */ }
+            window.location.href = "{{ route('login.form') }}";
+        });
+    });
+});
+</script>
 @endsection

@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function attachInputHandlers() {
+    // handle numeric quantity inputs
     document.querySelectorAll('#supplies-list input[type="number"]').forEach(inputEl => {
       const id = (inputEl.dataset.id) ? inputEl.dataset.id : (inputEl.id || '').replace('quantity_', '');
       inputEl.dataset.id = id;
@@ -22,6 +23,13 @@ document.addEventListener('DOMContentLoaded', () => {
       inputEl.addEventListener('input', function() {
         quantities[id] = parseInt(this.value, 10) || 0;
       });
+    });
+
+    // handle measure text inputs
+    document.querySelectorAll('#supplies-list input[data-measure="true"]').forEach(inputEl => {
+      const id = (inputEl.dataset.id) ? inputEl.dataset.id : (inputEl.id || '').replace('measure_', '');
+      inputEl.dataset.id = id;
+      inputEl.name = `items[${id}][measure_requested]`;
     });
 
     // add-btn handler: increment quantity by 1
@@ -47,6 +55,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     supplies.forEach(supply => {
       const qty = quantities[supply.id] || 0;
+      // If the supply is sold by measure, render a text input for measure
+      const isMeasure = (supply.sale_mode && supply.sale_mode === 'measure');
+      const inputHtml = isMeasure
+        ? `<label>Mesure</label><input type="text" value="" id="measure_${supply.id}" data-measure="true" />`
+        : `<label>Qté</label><input type="number" min="0" value="${qty}" id="quantity_${supply.id}">`;
+
       const card = `
         <div class="supply-card" data-id="${supply.id}">
           <div class="supply-image">
@@ -57,8 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <p class="description">${supply.description ?? ''}</p>
             <div class="price-qty">
               <div class="quantity-group">
-                <label>Qté</label>
-                <input type="number" min="0" value="${qty}" id="quantity_${supply.id}">
+                ${inputHtml}
               </div>
             </div>
           </div>
@@ -116,48 +129,80 @@ document.addEventListener('DOMContentLoaded', () => {
     compareForm.addEventListener('submit', function(e) {
       // remove old injected inputs
       document.querySelectorAll('input[data-preserve="true"]').forEach(el => el.remove());
+        // gather measure inputs and quantity inputs
+        const injected = [];
 
-      const entries = Object.entries(quantities).map(([k,v]) => [k, parseInt(v,10)||0]);
-      const positive = entries.filter(([id,qty]) => qty > 0);
-      if (positive.length === 0) {
-        e.preventDefault();
-        // Use SweetAlert2 if available for a nicer UI, otherwise fallback to alert()
-        const showWarning = () => {
-          try {
-            if (window.Swal && typeof window.Swal.fire === 'function') {
-              window.Swal.fire({
-                icon: 'warning',
-                title: 'Attention',
-                text: 'Veuillez renseigner au moins une quantité supérieure à zéro.',
-                confirmButtonText: 'OK'
-              }).then(() => {
-                // focus first quantity input
-                const firstInput = document.querySelector('#supplies-list input[type="number"]');
-                if (firstInput) firstInput.focus();
-              });
-            } else {
-              alert('Veuillez renseigner au moins une quantité supérieure à zéro.');
-              const firstInput = document.querySelector('#supplies-list input[type="number"]');
-              if (firstInput) firstInput.focus();
+        // Inject measure_requested inputs present in DOM, validating format
+        const measureRegex = /^\s*\d+(?:[.,]\d+)?\s*(m|cm|mm|pcs|lot|kg)?\s*$/i;
+        document.querySelectorAll('#supplies-list input[data-measure="true"]').forEach(el => {
+          const val = el.value && el.value.trim();
+          if (val) {
+            // validate
+            if (!measureRegex.test(val)) {
+              e.preventDefault();
+              try {
+                if (window.Swal && typeof window.Swal.fire === 'function') {
+                  window.Swal.fire({ icon: 'error', title: 'Format invalide', text: `La mesure « ${val} » n'est pas valide. Exemple: 2.5m ou 250cm.` });
+                } else {
+                  alert(`La mesure « ${val} » n'est pas valide. Exemple: 2.5m ou 250cm.`);
+                }
+              } catch (err) { alert(`La mesure « ${val} » n'est pas valide.`); }
+              el.focus();
+              return false;
             }
-          } catch (err) {
-            console.error('Swal show failed:', err);
-            alert('Veuillez renseigner au moins une quantité supérieure à zéro.');
+
+            const id = el.dataset.id;
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = `items[${id}][measure_requested]`;
+            hidden.value = val;
+            hidden.setAttribute('data-preserve', 'true');
+            compareForm.appendChild(hidden);
+            injected.push(id);
           }
-        };
+        });
 
-        showWarning();
-        return false;
-      }
+        // Inject positive numeric quantities
+        const entries = Object.entries(quantities).map(([k,v]) => [k, parseInt(v,10)||0]);
+        const positive = entries.filter(([id,qty]) => qty > 0 && !injected.includes(id));
 
-      positive.forEach(([id, qty]) => {
-        const hidden = document.createElement('input');
-        hidden.type = 'hidden';
-        hidden.name = `items[${id}][quantity]`;
-        hidden.value = String(qty);
-        hidden.setAttribute('data-preserve', 'true');
-        compareForm.appendChild(hidden);
-      });
+        positive.forEach(([id, qty]) => {
+          const hidden = document.createElement('input');
+          hidden.type = 'hidden';
+          hidden.name = `items[${id}][quantity]`;
+          hidden.value = String(qty);
+          hidden.setAttribute('data-preserve', 'true');
+          compareForm.appendChild(hidden);
+        });
+
+        if (injected.length === 0 && positive.length === 0) {
+          e.preventDefault();
+          const showWarning = () => {
+            try {
+              if (window.Swal && typeof window.Swal.fire === 'function') {
+                window.Swal.fire({
+                  icon: 'warning',
+                  title: 'Attention',
+                  text: 'Veuillez renseigner au moins une quantité ou une mesure.',
+                  confirmButtonText: 'OK'
+                }).then(() => {
+                  const firstInput = document.querySelector('#supplies-list input');
+                  if (firstInput) firstInput.focus();
+                });
+              } else {
+                alert('Veuillez renseigner au moins une quantité ou une mesure.');
+                const firstInput = document.querySelector('#supplies-list input');
+                if (firstInput) firstInput.focus();
+              }
+            } catch (err) {
+              console.error('Swal show failed:', err);
+              alert('Veuillez renseigner au moins une quantité ou une mesure.');
+            }
+          };
+
+          showWarning();
+          return false;
+        }
     });
   }
 

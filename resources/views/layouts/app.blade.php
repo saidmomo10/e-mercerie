@@ -96,14 +96,14 @@
                   <span class="text">Merceries</span>
                   </a>
               </li>
-              <li class="nav-item">
+              <!-- <li class="nav-item">
                   <a href="{{ route('supplies.selection') }}">
                   <span class="icon">
                       <i class="fa-solid fa-check-double"></i>
                   </span>
                   <span class="text">Sélection Fournitures</span>
                   </a>
-              </li>
+              </li> -->
               <li class="nav-item">
                   <a href="{{ route('orders.index') }}">
                   <span class="icon">
@@ -645,6 +645,13 @@
     });
 </script>
 @endif
+
+@auth
+<script>
+  // Clear any stored post-login return value after successful authentication
+  try { localStorage.removeItem('post_login_return'); } catch (e) { /* ignore */ }
+</script>
+@endauth
 
 @if(session('showProfileModal') || session('show_profile_modal'))
 <script>

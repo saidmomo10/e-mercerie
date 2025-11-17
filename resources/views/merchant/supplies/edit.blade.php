@@ -157,8 +157,29 @@ input:focus {
 
         <div class="mb-4">
             <label for="stock_quantity">Quantité en stock :</label>
-            <input type="number" id="stock_quantity" name="stock_quantity" min="0" 
+            <input type="number" id="stock_quantity" name="stock_quantity" min="0" step="0.01"
                    value="{{ $merchantSupply->stock_quantity }}" required>
+        </div>
+
+        <div class="mb-4">
+            <label>Mesure (définie par l'administrateur)</label>
+            <input type="text" id="measure" value="{{ $merchantSupply->measure ?? ($merchantSupply->supply->measure ?? '') }}" disabled class="form-control" />
+            <small class="text-muted">Cette valeur est déterminée par l'administrateur et n'est pas modifiable par la mercerie.</small>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Mode de vente</label>
+            @php
+                $mode = $merchantSupply->sale_mode ?? ($merchantSupply->supply->sale_mode ?? 'quantity');
+            @endphp
+            <div>
+                @if($mode === 'measure')
+                    <span class="badge bg-info text-dark">Par mesure</span>
+                @else
+                    <span class="badge bg-secondary">Par quantité</span>
+                @endif
+                <small class="text-muted ms-2">Défini par l'administrateur.</small>
+            </div>
         </div>
 
         <div class="d-flex justify-content-between align-items-center">

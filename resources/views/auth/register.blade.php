@@ -27,7 +27,8 @@
       justify-content: center;
       min-height: 100vh;
       color: var(--text-dark);
-      overflow: hidden;
+      padding: 16px;
+      overflow-x: hidden;
   }
 
   /* === CONTAINER === */
@@ -36,7 +37,8 @@
       border-radius: 20px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.1);
       overflow: hidden;
-      width: 900px;
+      width: 100%;
+      max-width: 900px;
       display: flex;
       flex-wrap: wrap;
       animation: fadeIn 1s ease;
@@ -45,8 +47,8 @@
   /* === FORM SECTION === */
   .form-container {
       flex: 1;
-      min-width: 380px;
-      padding: 60px 50px;
+      min-width: 300px;
+      padding: 40px 30px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -54,7 +56,7 @@
   }
 
   .form-container h1 {
-      font-size: 2rem;
+      font-size: clamp(1.5rem, 4vw, 2rem);
       color: var(--main-color);
       font-weight: 700;
       margin-bottom: 15px;
@@ -69,7 +71,7 @@
       padding: 14px;
       width: 100%;
       margin-bottom: 15px;
-      font-size: 14px;
+      font-size: 16px; /* Amélioration pour mobile */
       transition: border-color 0.3s, box-shadow 0.3s;
   }
 
@@ -88,6 +90,7 @@
       font-weight: 600;
       cursor: pointer;
       transition: background-color 0.3s, transform 0.2s;
+      width: 100%;
   }
 
   button:hover {
@@ -115,9 +118,14 @@
       font-size: 14px;
   }
 
+  .alert.error ul {
+      margin-left: 16px;
+  }
+
   .signup-text {
       margin-top: 18px;
       font-size: 14px;
+      text-align: center;
       opacity:0;
       transform: translateY(20px);
       animation: fadeUp 0.8s forwards 1.2s;
@@ -130,7 +138,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      min-width: 380px;
+      min-width: 300px;
+      min-height: 250px;
       animation: slideInRight 1.2s ease forwards;
   }
 
@@ -140,27 +149,114 @@
       max-width: 400px;
       height: auto;
       object-fit: contain;
-      /* animation: float 4s ease-in-out infinite; */
+  }
+
+  /* === PASSWORD TOGGLE === */
+  .password-container {
+      position: relative;
+      margin-bottom: 15px;
+  }
+
+  .password-container input {
+      padding-right: 42px;
+      margin-bottom: 0;
+  }
+
+  .pw-toggle {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 6px;
+      color: var(--main-color);
+      width: auto;
   }
 
   /* === RESPONSIVE === */
   @media (max-width: 1024px) {
       .container { width: 95%; }
-      .form-container { padding: 50px 30px; }
+      .form-container { padding: 40px 30px; }
   }
 
-  @media (max-width: 850px) {
-      .container { flex-direction: column; width: 90%; }
-      .form-container { padding: 40px 20px; }
-      .illustration { width: 100%; min-height: 200px; margin-top: 20px; }
-      .illustration img { width: 80%; max-width: 300px; }
+  @media (max-width: 768px) {
+      .container { 
+          flex-direction: column; 
+          width: 100%;
+          border-radius: 16px;
+      }
+      .form-container { 
+          padding: 30px 20px; 
+          min-width: 100%;
+      }
+      .illustration { 
+          width: 100%; 
+          min-height: 200px; 
+          padding: 20px;
+      }
+      .illustration img { 
+          width: 70%; 
+          max-width: 250px; 
+      }
+      input, select { 
+          font-size: 16px; /* Important pour éviter le zoom sur iOS */
+          padding: 12px; 
+      }
+      button { 
+          padding: 12px 20px; 
+          font-size: 16px; 
+      }
   }
 
-  @media (max-width: 500px) {
-      .form-container h1 { font-size: 1.6rem; }
-      input, select { font-size: 13px; padding: 12px; }
-      button { padding: 12px 20px; font-size: 14px; }
-      .signup-text { font-size: 13px; }
+  @media (max-width: 480px) {
+      body {
+          padding: 12px;
+      }
+      .container {
+          border-radius: 12px;
+      }
+      .form-container { 
+          padding: 25px 16px; 
+      }
+      .form-container h1 { 
+          font-size: 1.5rem; 
+          margin-bottom: 12px;
+      }
+      input, select { 
+          font-size: 16px; 
+          padding: 12px; 
+          margin-bottom: 12px;
+      }
+      button { 
+          padding: 12px 20px; 
+          font-size: 16px; 
+      }
+      .signup-text { 
+          font-size: 13px; 
+      }
+      .illustration { 
+          min-height: 180px; 
+          padding: 15px;
+      }
+      .illustration img { 
+          width: 60%; 
+          max-width: 200px; 
+      }
+  }
+
+  @media (max-width: 360px) {
+      .form-container { 
+          padding: 20px 12px; 
+      }
+      .form-container h1 { 
+          font-size: 1.4rem; 
+      }
+      .signup-text { 
+          font-size: 12px; 
+      }
   }
 
   /* === ANIMATIONS === */
@@ -192,8 +288,17 @@
 
           <input type="text" name="name" placeholder="Nom" value="{{ old('name') }}" required>
           <input type="email" name="email" placeholder="Email" value="{{ old('email') }}" required>
-          <input type="password" name="password" placeholder="Mot de passe" required>
-          <input type="password" name="password_confirmation" placeholder="Confirmer mot de passe" required>
+          
+          <div class="password-container">
+              <input type="password" name="password" id="register_password" placeholder="Mot de passe" required />
+              <button type="button" class="pw-toggle" data-target="#register_password" aria-label="Afficher le mot de passe">Afficher</button>
+          </div>
+          
+          <div class="password-container">
+              <input type="password" name="password_confirmation" id="register_password_confirmation" placeholder="Confirmer mot de passe" required />
+              <button type="button" class="pw-toggle" data-target="#register_password_confirmation" aria-label="Afficher le mot de passe">Afficher</button>
+          </div>
+          
           <select name="role" required>
               <option value="">-- Sélectionner un rôle --</option>
               <option value="couturier" {{ old('role')=='couturier'?'selected':'' }}>Couturier</option>
@@ -212,21 +317,40 @@
   </div>
 </div>
 
-<script src="{{ asset('js/login.js') }}"></script>
+<script>
+// Gestion de l'affichage/masquage des mots de passe
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleButtons = document.querySelectorAll('.pw-toggle');
+    
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const passwordInput = document.querySelector(targetId);
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                this.textContent = 'Masquer';
+            } else {
+                passwordInput.type = 'password';
+                this.textContent = 'Afficher';
+            }
+        });
+    });
+    
+    // Gestion des messages flash avec SweetAlert2
+    @if(session('success') || session('error'))
+        Swal.fire({
+            icon: '{{ session("success") ? "success" : "error" }}',
+            title: '{{ session("success") ? "Succès" : "Erreur" }}',
+            text: `{{ session('success') ?? session('error') }}`,
+            confirmButtonColor: '#4F0341'
+        });
+    @endif
+});
+</script>
+
 <!-- SweetAlert2 pour messages flash -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-@if(session('success') || session('error'))
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-      Swal.fire({
-          icon: '{{ session("success") ? "success" : "error" }}',
-          title: '{{ session("success") ? "Succès" : "Erreur" }}',
-          text: `{{ session('success') ?? session('error') }}`,
-          confirmButtonColor: '#4F0341'
-      });
-  });
-</script>
-@endif
 
 </body>
 </html>

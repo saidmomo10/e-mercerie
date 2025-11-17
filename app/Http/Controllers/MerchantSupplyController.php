@@ -67,25 +67,52 @@ class MerchantSupplyController extends Controller
         $data = $request->validate([
             'supply_id' => 'required|exists:supplies,id',
             'price' => 'required|numeric|min:0',
-            'stock_quantity' => 'required|integer|min:0',
+            // allow decimal stock quantities for measured supplies
+            'stock_quantity' => 'required|numeric|min:0',
+            // 'measure' and 'sale_mode' are admin-only and must not be provided by merchants
+            // reject any attempt by a merchant to set these fields
+            'sale_mode' => 'prohibited',
+            'measure' => 'prohibited',
         ]);
 
         $existing = MerchantSupply::where('user_id', $request->user()->id)
             ->where('supply_id', $data['supply_id'])
             ->first();
 
+        // Get admin-level defaults from the Supply model
+        $supply = Supply::find($data['supply_id']);
+        $adminSaleMode = $supply->sale_mode ?? 'quantity';
+        $adminMeasure = $supply->measure ?? null;
+
         if ($existing) {
-            $existing->update($data);
+            // update only merchant-editable fields
+            $existing->update([
+                'price' => $data['price'],
+                'stock_quantity' => $data['stock_quantity'],
+            ]);
+
+            // Ensure merchant record has a sale_mode/measure; do not overwrite if already set
+            $dirty = false;
+            if (empty($existing->sale_mode)) { $existing->sale_mode = $adminSaleMode; $dirty = true; }
+            if (empty($existing->measure) && $adminMeasure) { $existing->measure = $adminMeasure; $dirty = true; }
+            if ($dirty) { $existing->save(); }
+
             return redirect()->route('merchant.supplies.index')
                 ->with('success', 'Fourniture déjà existante, mise à jour avec succès');
         }
 
-        MerchantSupply::create([
+        // Create merchant supply, then explicitly set admin-defined sale_mode/measure
+        $merchantSupply = MerchantSupply::create([
             'user_id' => $request->user()->id,
             'supply_id' => $data['supply_id'],
             'price' => $data['price'],
             'stock_quantity' => $data['stock_quantity'],
         ]);
+
+        // Assign admin-defined sale_mode/measure after creation (avoid mass-assigning these via fillable)
+        $merchantSupply->sale_mode = $adminSaleMode;
+        if ($adminMeasure) $merchantSupply->measure = $adminMeasure;
+        $merchantSupply->save();
 
         return redirect()->route('merchant.supplies.index')
             ->with('success', 'Fourniture ajoutée à votre boutique');
@@ -109,10 +136,18 @@ class MerchantSupplyController extends Controller
 
         $data = $request->validate([
             'price' => 'required|numeric|min:0',
-            'stock_quantity' => 'required|integer|min:0',
+            'stock_quantity' => 'required|numeric|min:0',
+            // merchants cannot change measure or sale_mode
+            // explicitly prohibit these fields if submitted
+            'sale_mode' => 'prohibited',
+            'measure' => 'prohibited',
         ]);
 
-        $merchantSupply->update($data);
+        // Only update mutable fields for merchant
+        $merchantSupply->update([
+            'price' => $data['price'],
+            'stock_quantity' => $data['stock_quantity'],
+        ]);
 
         return redirect()->route('merchant.supplies.index')
             ->with('success', 'Fourniture mise à jour avec succès');

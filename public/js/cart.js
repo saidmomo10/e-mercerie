@@ -13,6 +13,10 @@
   }
 
   function findIndex(cart, item){
+    // For measure items, include measure_requested in identity so different measures don't merge
+    if (item.measure_requested !== undefined) {
+      return cart.findIndex(c => c.id === item.id && c.merchant_id === item.merchant_id && (c.measure_requested ?? null) === (item.measure_requested ?? null));
+    }
     return cart.findIndex(c => c.id === item.id && c.merchant_id === item.merchant_id);
   }
 
@@ -67,11 +71,31 @@
       const line = document.createElement('div');
       line.className = 'd-flex align-items-center justify-content-between p-2 border-bottom';
       const left = document.createElement('div');
-      left.innerHTML = `<strong>${escapeHtml(item.name)}</strong><br><small class="text-muted">Qté: ${item.quantity}</small>`;
+      // If item has a measure_requested, show it and compute subtotal if parsable
+      let lineHtmlLeft = `<strong>${escapeHtml(item.name)}</strong><br>`;
+      let linePrice = 0;
+      if (item.measure_requested && String(item.measure_requested).trim().length > 0) {
+        lineHtmlLeft += `<small class="text-muted">Mesure: ${escapeHtml(String(item.measure_requested))}${item.unit ? ' ' + escapeHtml(item.unit) : ''}</small>`;
+        // try to parse measure to meters (supports m, cm, mm, comma decimals)
+        const meters = parseMeasureToMeters(String(item.measure_requested));
+        if (meters !== null) {
+          linePrice = Number(item.price || 0) * meters;
+          // show unit price (per meter) if unit present
+          lineHtmlLeft += `<br><small class="text-muted">Prix unité: ${formatPrice(item.price)}${item.unit ? ' /' + escapeHtml(item.unit) : ''}</small>`;
+        } else {
+          // fallback: if quantity exists, use it
+          linePrice = Number(item.price || 0) * Number(item.quantity || 0);
+          lineHtmlLeft += `<br><small class="text-muted">Prix unité: ${formatPrice(item.price)}</small>`;
+        }
+      } else {
+        lineHtmlLeft += `<small class="text-muted">Qté: ${item.quantity}</small>`;
+        linePrice = Number(item.price || 0) * Number(item.quantity || 0);
+        lineHtmlLeft += `<br><small class="text-muted">Prix unité: ${formatPrice(item.price)}</small>`;
+      }
       const right = document.createElement('div');
-      const price = Number(item.price || 0) * Number(item.quantity || 0);
-      total += price;
-      right.innerHTML = `<div class="text-end">${formatPrice(price)}<br><button class="btn btn-sm btn-link text-danger remove-cart" data-id="${item.id}" data-merchant="${item.merchant_id}">Supprimer</button></div>`;
+      total += Math.round(linePrice || 0);
+      right.innerHTML = `<div class="text-end">${formatPrice(Math.round(linePrice || 0))}<br><button class="btn btn-sm btn-link text-danger remove-cart" data-id="${item.id}" data-merchant="${item.merchant_id}" data-measure="${escapeHtml(item.measure_requested ?? '')}">Supprimer</button></div>`;
+      left.innerHTML = lineHtmlLeft;
       line.appendChild(left); line.appendChild(right);
       container.appendChild(line);
     });
@@ -86,8 +110,22 @@
   }
 
   function formatPrice(v){
-    if (typeof Intl !== 'undefined') return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
-    return v + ' FCFA';
+    const n = Math.round(Number(v) || 0);
+    if (typeof Intl !== 'undefined') return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(n) + ' FCFA';
+    return n + ' FCFA';
+  }
+
+  // parse measure strings like '2.5m', '250cm', '1000mm' -> meters (float)
+  function parseMeasureToMeters(str) {
+    if (!str) return null;
+    const s = String(str).trim().toLowerCase();
+    const m = s.match(/^\s*(\d+(?:[\.,]\d+)?)\s*(m|cm|mm)?\s*$/i);
+    if (!m) return null;
+    const num = parseFloat(m[1].replace(',', '.'));
+    const unit = (m[2] || 'm').toLowerCase();
+    if (unit === 'cm') return num / 100.0;
+    if (unit === 'mm') return num / 1000.0;
+    return num;
   }
 
   function escapeHtml(str){ return String(str).replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[m]; }); }
@@ -125,11 +163,18 @@
       const name = btn.dataset.name || btn.dataset.label || '';
       const price = btn.dataset.price || 0;
       // try to find quantity input in the same card
-      const card = btn.closest('.supply-card, .mercerie-card, .card');
+        const card = btn.closest('.supply-card, .mercerie-card, .card');
       let qty = 1;
+      let measureRequested = null;
+      let measureUnit = null;
       if (card){
         const qinput = card.querySelector('input[type="number"]');
         if (qinput) qty = Number(qinput.value) || 0;
+        const minput = card.querySelector('input[data-measure="true"], input.measure-input');
+        if (minput) {
+          measureRequested = (minput.value || '').toString().trim();
+          measureUnit = minput.dataset.unit || null;
+        }
       }
       if (!id){ console.warn('add-to-cart missing id'); return; }
       if (qty <= 0){
@@ -140,7 +185,10 @@
         }catch(e){ alert('Veuillez indiquer une quantité supérieure à zéro.'); }
         return;
       }
-      EmCart.add({ id: id, name: name, quantity: qty, price: price, merchant_id: merchant });
+      const itemObj = { id: id, name: name, quantity: qty, price: price, merchant_id: merchant };
+      if (measureRequested) itemObj.measure_requested = measureRequested;
+      if (measureUnit) itemObj.unit = measureUnit;
+      EmCart.add(itemObj);
     });
 
     // cart button open modal
@@ -182,10 +230,14 @@
         const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
         const csrfInput = document.createElement('input'); csrfInput.type = 'hidden'; csrfInput.name = '_token'; csrfInput.value = csrf; form.appendChild(csrfInput);
 
-        // append items as items[][merchant_supply_id] and items[][quantity]
+        // append items as items[<idx>][merchant_supply_id] and either quantity or measure_requested
         cart.forEach((it, idx) => {
           const mi = document.createElement('input'); mi.type = 'hidden'; mi.name = `items[${idx}][merchant_supply_id]`; mi.value = String(it.id); form.appendChild(mi);
-          const qi = document.createElement('input'); qi.type = 'hidden'; qi.name = `items[${idx}][quantity]`; qi.value = String(it.quantity); form.appendChild(qi);
+          if (it.measure_requested && String(it.measure_requested).trim().length > 0) {
+            const mr = document.createElement('input'); mr.type = 'hidden'; mr.name = `items[${idx}][measure_requested]`; mr.value = String(it.measure_requested); form.appendChild(mr);
+          } else {
+            const qi = document.createElement('input'); qi.type = 'hidden'; qi.name = `items[${idx}][quantity]`; qi.value = String(it.quantity); form.appendChild(qi);
+          }
         });
 
         document.body.appendChild(form);

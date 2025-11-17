@@ -13,6 +13,7 @@ class OrderItem extends Model
         'order_id',
         'merchant_supply_id',
         'quantity',
+        'measure_requested',
         'price',
         'subtotal',
     ];

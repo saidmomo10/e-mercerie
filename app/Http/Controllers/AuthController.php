@@ -159,6 +159,26 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
+        // If a redirect_to value was provided (from localStorage via hidden input), validate it and redirect there
+        $redirectTo = $request->input('redirect_to');
+        if (!empty($redirectTo)) {
+            // Allow relative paths (starting with '/')
+            if (strpos($redirectTo, '/') === 0) {
+                return redirect($redirectTo)->with('success', 'Connexion réussie !');
+            }
+
+            // If absolute URL, allow when host matches app.url host or current request host (handles 127.0.0.1:8000, localhost variants)
+            $parsed = parse_url($redirectTo);
+            if ($parsed && isset($parsed['host'])) {
+                $targetHost = $parsed['host'];
+                $appHost = parse_url(config('app.url') ?? url('/'), PHP_URL_HOST);
+                $requestHost = $request->getHost();
+                if ($targetHost === $appHost || $targetHost === $requestHost) {
+                    return redirect($redirectTo)->with('success', 'Connexion réussie !');
+                }
+            }
+        }
+
         return redirect()->route('landing')->with('success', 'Connexion réussie !');
     }
 

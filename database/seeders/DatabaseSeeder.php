@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
             RolesSeeder::class,
             SuperAdminSeeder::class,
             SuppliesSeeder::class,
-            UserSeeder::class,
+            // UserSeeder::class,
             \Database\Seeders\CitySeeder::class,
         ]);
 

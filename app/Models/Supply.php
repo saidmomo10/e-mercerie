@@ -10,7 +10,10 @@ class Supply extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'category', 'unit', 'description', 'image_url'];
+    /**
+     * Fillable attributes for mass assignment.
+     */
+    protected $fillable = ['name', 'category', 'unit', 'measure', 'sale_mode', 'description', 'image_url'];
 
     /**
      * Automatically append accessor attributes when model is serialized to array/json.

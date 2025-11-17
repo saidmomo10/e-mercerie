@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Models\Supply;
 
 class MerchantController extends Controller
 {
@@ -69,7 +70,11 @@ class MerchantController extends Controller
             ->with(['merchantSupplies','cityModel','quarter'])
             ->get();
 
-        return view('landing', compact('merceries', 'search'));
+    // Also pass available supplies so landing can show selection form
+    // Use pagination to avoid rendering thousands of supplies on the landing page
+    $perPage = 5;
+    $supplies = Supply::orderBy('name')->paginate($perPage)->withQueryString();
+    return view('landing', compact('merceries', 'search', 'supplies'));
     }
 
     public function searchAjax(Request $request)
