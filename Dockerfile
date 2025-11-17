@@ -43,4 +43,4 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 EXPOSE 8000
 
 # Démarrage de Laravel
-CMD php artisan storage:link && php artisan serve --host=0.0.0.0 --port=8000
+CMD php artisan db:seed --force && php artisan storage:link && php artisan serve --host=0.0.0.0 --port=8000
